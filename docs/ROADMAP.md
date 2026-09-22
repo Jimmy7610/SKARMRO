@@ -9,7 +9,7 @@
 - Child cannot stop/modify service
 - Verified on Windows 11 Home (WILMA)
 
-## Week 2 — App enforcement — PIVOT IN PROGRESS
+## Week 2 — App enforcement — DECISION ENGINE PASS / RUNTIME PENDING SIGNING
 ### AppLocker finding
 - Application Identity engine exists on WILMA
 - AppLocker PowerShell module missing
@@ -40,7 +40,8 @@
 - Keep Smart App Control enabled on WILMA
 - Test enforcement decision logic independently from service startup
 - Added zero-dependency Guard logic test harness
-- 12/12 decision tests green on WILMA
+- 12/12 decision tests green in GitHub Actions on Windows
+- Local WILMA test DLLs are blocked by Smart App Control, so CI is the canonical logic-test path
 - Blocked-app recognition now covers process name + SHA-256 rename resistance
 - Structured decision reasons added for future Policy Receipts
 
@@ -51,10 +52,13 @@
 - Signing pipeline added
 - Do not disable Smart App Control on the primary Home validation machine
 
-## Week 3 — Managed Chrome
+## Week 3 — Managed Chrome — IN PROGRESS
 - Chrome installation/detection
 - Chrome Windows policy baseline
-- Browser Guard extension prototype
+- Browser Guard Manifest V3 prototype — BUILT
+- Shorts URL classification — BUILT
+- Shorts link/shelf hiding prototype — BUILT
+- Browser Guard CI — BUILT
 - Chrome Web Store distribution path
 - Force-install / anti-disable validation
 - Block unsupported alternate browsers for child account
