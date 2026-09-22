@@ -39,3 +39,20 @@ Current prototype:
 ## Kill criterion for Shorts DOM filtering
 
 If YouTube changes cause the filter to fail frequently, SKÄRMRO must not market the feature as guaranteed. Automated regression fixtures should be added before pilot.
+
+
+## WILMA manual validation
+
+Verified manually on Windows 11 Home with Chrome 153:
+
+- SKÄRMRO Browser Guard loaded as an unpacked extension.
+- Options page rendered correctly.
+- `Blockera YouTube Shorts` enabled and saved.
+- Attempting to open YouTube Shorts redirects back to normal YouTube.
+
+Status: **direct Shorts navigation PASS**.
+
+Next manual validation:
+- confirm Shorts shelves/cards are hidden on YouTube Home
+- confirm Shorts results are hidden in search
+- confirm blocked-channel shadow filtering
