@@ -1,0 +1,15 @@
+/* SKÄRMRO Browser Guard — defensive Shorts suppression for current YouTube layouts */
+html[data-skarmro-block-shorts="true"] ytd-reel-shelf-renderer,
+html[data-skarmro-block-shorts="true"] ytd-rich-section-renderer:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytd-item-section-renderer:has(ytm-shorts-lockup-view-model-v2),
+html[data-skarmro-block-shorts="true"] ytd-item-section-renderer:has(ytd-reel-shelf-renderer),
+html[data-skarmro-block-shorts="true"] ytd-video-renderer:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytd-grid-video-renderer:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytd-rich-item-renderer:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytd-compact-video-renderer:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytm-shorts-lockup-view-model-v2,
+html[data-skarmro-block-shorts="true"] yt-lockup-view-model:has(a[href^="/shorts/"]),
+html[data-skarmro-block-shorts="true"] ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+html[data-skarmro-block-shorts="true"] ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]) {
+  display: none !important;
+}
