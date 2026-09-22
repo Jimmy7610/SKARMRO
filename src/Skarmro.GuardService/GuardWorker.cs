@@ -133,7 +133,9 @@ public sealed class GuardWorker : BackgroundService
             var executablePath = TryGetExecutablePath(processId);
             var sha256 = TryGetSha256(executablePath);
 
-            if (!ProcessGuardEvaluator.ShouldTerminate(policy, ownerSid, processName, sha256))
+            var decision = ProcessGuardEvaluator.Evaluate(policy, ownerSid, processName, sha256);
+
+            if (!decision.ShouldTerminate)
             {
                 return;
             }
@@ -161,6 +163,7 @@ public sealed class GuardWorker : BackgroundService
                 ownerSid,
                 executablePath,
                 sha256,
+                decisionReason = decision.Reason.ToString(),
                 action = killed ? "terminated" : "termination_failed",
                 error
             });
