@@ -101,3 +101,31 @@ test("allows non-blocked channel", () => {
     { action: "allow", reason: "no-match" }
   );
 });
+
+test("accepts @handle input", () => {
+  assert.deepEqual(
+    rules.normalizeBlockedChannelInput("@BlockedCreator"),
+    { ok: true, key: "handle:blockedcreator" }
+  );
+});
+
+test("accepts full channel URL input", () => {
+  assert.deepEqual(
+    rules.normalizeBlockedChannelInput("https://www.youtube.com/channel/UC123456"),
+    { ok: true, key: "channel:uc123456" }
+  );
+});
+
+test("rejects watch video URL as channel input", () => {
+  assert.deepEqual(
+    rules.normalizeBlockedChannelInput("https://www.youtube.com/watch?v=abc123"),
+    { ok: false, reason: "video-url" }
+  );
+});
+
+test("rejects Shorts URL as channel input", () => {
+  assert.deepEqual(
+    rules.normalizeBlockedChannelInput("https://www.youtube.com/shorts/abc123"),
+    { ok: false, reason: "video-url" }
+  );
+});
