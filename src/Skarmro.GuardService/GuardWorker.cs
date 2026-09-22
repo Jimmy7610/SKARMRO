@@ -128,18 +128,9 @@ public sealed class GuardWorker : BackgroundService
             var processId = Convert.ToInt32(processIdValue);
             var policy = LoadProcessGuardPolicy();
 
-            if (policy is null || !policy.Enabled || string.IsNullOrWhiteSpace(policy.ChildSid))
-            {
-                return;
-            }
-
-            if (!policy.BlockedProcessNames.Contains(processName, StringComparer.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             var ownerSid = TryGetProcessOwnerSid(processId);
-            if (!string.Equals(ownerSid, policy.ChildSid, StringComparison.OrdinalIgnoreCase))
+
+            if (!ProcessGuardEvaluator.ShouldTerminate(policy, ownerSid, processName))
             {
                 return;
             }
@@ -243,10 +234,4 @@ public sealed class GuardWorker : BackgroundService
         }
     }
 
-    private sealed class ProcessGuardPolicy
-    {
-        public bool Enabled { get; set; }
-        public string ChildSid { get; set; } = "";
-        public string[] BlockedProcessNames { get; set; } = Array.Empty<string>();
-    }
 }
