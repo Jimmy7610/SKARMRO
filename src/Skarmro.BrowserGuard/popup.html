@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SKÄRMRO</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <div class="brand">SKÄRMRO</div>
+    <h1>Browser Guard</h1>
+
+    <section id="channelCard" class="card">
+      <div class="label">Aktuell YouTube-kanal</div>
+      <div id="channelName" class="channel">Letar efter kanal…</div>
+      <button id="toggleChannel" type="button" disabled>Blockera den här kanalen</button>
+      <div id="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <button id="openOptions" class="secondary" type="button">Öppna alla inställningar</button>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
