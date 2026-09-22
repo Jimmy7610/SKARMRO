@@ -56,3 +56,19 @@ Next manual validation:
 - confirm Shorts shelves/cards are hidden on YouTube Home
 - confirm Shorts results are hidden in search
 - confirm blocked-channel shadow filtering
+
+
+### WILMA manual validation — Shorts UI filtering
+
+Verified on Chrome 153 with Browser Guard v0.2.0:
+
+- Direct Shorts navigation remains blocked.
+- Shorts section in YouTube search results is hidden.
+- Normal long-form video results remain visible.
+
+Status: **Shorts search/UI filtering PASS**.
+
+Next manual validation:
+- blocked-channel shadow filtering
+- channel page redirect
+- verify normal channels remain unaffected
