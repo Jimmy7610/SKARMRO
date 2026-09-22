@@ -19,32 +19,39 @@ var enabledPolicy = new ProcessGuardPolicy
     ]
 };
 
-var tests = new (string Name, bool Expected, ProcessGuardPolicy? Policy, string? OwnerSid, string? ProcessName, string? Sha256)[]
+var tests = new (
+    string Name,
+    bool ExpectedTerminate,
+    ProcessGuardDecisionReason ExpectedReason,
+    ProcessGuardPolicy? Policy,
+    string? OwnerSid,
+    string? ProcessName,
+    string? Sha256)[]
 {
-    ("child + blocked exact", true, enabledPolicy, childSid, "Skarmro.BlockedProbe.exe", null),
-    ("child + blocked case-insensitive", true, enabledPolicy, childSid.ToLowerInvariant(), "SKARMRO.BLOCKEDPROBE.EXE", null),
-    ("child + renamed blocked hash", true, enabledPolicy, childSid, "totally-renamed.exe", blockedHash),
-    ("child + renamed blocked hash case-insensitive", true, enabledPolicy, childSid, "another-name.exe", blockedHash.ToLowerInvariant()),
-    ("child + allowed app", false, enabledPolicy, childSid, "notepad.exe", "AAAAAAAA"),
-    ("parent + blocked app", false, enabledPolicy, parentSid, "Skarmro.BlockedProbe.exe", blockedHash),
-    ("missing owner SID", false, enabledPolicy, null, "Skarmro.BlockedProbe.exe", blockedHash),
-    ("missing process name but blocked hash", true, enabledPolicy, childSid, null, blockedHash),
-    ("missing process name and hash", false, enabledPolicy, childSid, null, null),
-    ("disabled policy", false, new ProcessGuardPolicy
+    ("child + blocked exact", true, ProcessGuardDecisionReason.BlockedByName, enabledPolicy, childSid, "Skarmro.BlockedProbe.exe", null),
+    ("child + blocked case-insensitive", true, ProcessGuardDecisionReason.BlockedByName, enabledPolicy, childSid.ToLowerInvariant(), "SKARMRO.BLOCKEDPROBE.EXE", null),
+    ("child + renamed blocked hash", true, ProcessGuardDecisionReason.BlockedByHash, enabledPolicy, childSid, "totally-renamed.exe", blockedHash),
+    ("child + renamed blocked hash case-insensitive", true, ProcessGuardDecisionReason.BlockedByHash, enabledPolicy, childSid, "another-name.exe", blockedHash.ToLowerInvariant()),
+    ("child + allowed app", false, ProcessGuardDecisionReason.Allowed, enabledPolicy, childSid, "notepad.exe", "AAAAAAAA"),
+    ("parent + blocked app", false, ProcessGuardDecisionReason.DifferentUser, enabledPolicy, parentSid, "Skarmro.BlockedProbe.exe", blockedHash),
+    ("missing owner SID", false, ProcessGuardDecisionReason.MissingOwnerSid, enabledPolicy, null, "Skarmro.BlockedProbe.exe", blockedHash),
+    ("missing process name but blocked hash", true, ProcessGuardDecisionReason.BlockedByHash, enabledPolicy, childSid, null, blockedHash),
+    ("missing process name and hash", false, ProcessGuardDecisionReason.Allowed, enabledPolicy, childSid, null, null),
+    ("disabled policy", false, ProcessGuardDecisionReason.PolicyDisabled, new ProcessGuardPolicy
     {
         Enabled = false,
         ChildSid = childSid,
         BlockedProcessNames = ["Skarmro.BlockedProbe.exe"],
         BlockedSha256 = [blockedHash]
     }, childSid, "Skarmro.BlockedProbe.exe", blockedHash),
-    ("empty child SID", false, new ProcessGuardPolicy
+    ("empty child SID", false, ProcessGuardDecisionReason.MissingChildSid, new ProcessGuardPolicy
     {
         Enabled = true,
         ChildSid = "",
         BlockedProcessNames = ["Skarmro.BlockedProbe.exe"],
         BlockedSha256 = [blockedHash]
     }, childSid, "Skarmro.BlockedProbe.exe", blockedHash),
-    ("null policy", false, null, childSid, "Skarmro.BlockedProbe.exe", blockedHash)
+    ("null policy", false, ProcessGuardDecisionReason.PolicyMissing, null, childSid, "Skarmro.BlockedProbe.exe", blockedHash)
 };
 
 var failed = 0;
@@ -55,16 +62,18 @@ Console.WriteLine();
 
 foreach (var test in tests)
 {
-    var actual = ProcessGuardEvaluator.ShouldTerminate(
+    var actual = ProcessGuardEvaluator.Evaluate(
         test.Policy,
         test.OwnerSid,
         test.ProcessName,
         test.Sha256);
 
-    var passed = actual == test.Expected;
+    var passed =
+        actual.ShouldTerminate == test.ExpectedTerminate &&
+        actual.Reason == test.ExpectedReason;
 
     Console.WriteLine(
-        $"{(passed ? "PASS" : "FAIL")}  {test.Name}  expected={test.Expected} actual={actual}");
+        $"{(passed ? "PASS" : "FAIL")}  {test.Name}  terminate={actual.ShouldTerminate} reason={actual.Reason}");
 
     if (!passed)
     {
