@@ -87,3 +87,21 @@ A signed redeploy follows:
 ```text
 publish -> sign -> verify -> install -> harden
 ```
+
+
+## Zero-budget development mode
+
+Gate 0 development budget target: **0 SEK**.
+
+Smart App Control remains enabled on WILMA. Until trusted release signing is available, SKÄRMRO continues development through logic tests and non-installing validation.
+
+Run:
+
+```powershell
+cd C:\SKARMRO
+git pull
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\week2\20-run-zero-cost-tests.ps1
+```
+
+This does not install or start the Windows service.
