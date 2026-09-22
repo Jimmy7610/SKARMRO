@@ -11,22 +11,12 @@
     blockedChannels: []
   };
 
-  function normalizeInputLine(line) {
-    const trimmed = line.trim();
-    if (!trimmed) return null;
-
-    if (trimmed.startsWith("@")) {
-      return "handle:" + trimmed.slice(1).toLowerCase();
+  function explainInvalidChannel(line, result) {
+    if (result.reason === "video-url") {
+      return `"${line}" är en videolänk, inte en kanal. Klicka på kanalnamnet under videon och kopiera kanalens adress i stället.`;
     }
 
-    const channelKey = rules?.normalizeChannelKey(trimmed);
-    if (channelKey) return channelKey;
-
-    if (/^UC[A-Za-z0-9_-]+$/.test(trimmed)) {
-      return "channel:" + trimmed.toLowerCase();
-    }
-
-    return null;
+    return `"${line}" känns inte igen som en YouTube-kanal. Använd @handle eller en kanaladress.`;
   }
 
   async function load() {
@@ -47,10 +37,32 @@
   }
 
   async function persist() {
-    const rawLines = blockedChannels.value.split(/\r?\n/);
-    const normalized = rawLines
-      .map(normalizeInputLine)
+    const rawLines = blockedChannels.value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
       .filter(Boolean);
+
+    const normalized = [];
+    const invalid = [];
+
+    for (const line of rawLines) {
+      const result = rules?.normalizeBlockedChannelInput(line) ?? {
+        ok: false,
+        reason: "invalid"
+      };
+
+      if (result.ok) {
+        normalized.push(result.key);
+      } else {
+        invalid.push(explainInvalidChannel(line, result));
+      }
+    }
+
+    if (invalid.length > 0) {
+      status.textContent = invalid[0];
+      status.dataset.state = "error";
+      return;
+    }
 
     const unique = [...new Set(normalized)];
 
@@ -61,9 +73,11 @@
       }
     });
 
+    status.dataset.state = "success";
     status.textContent = "Sparat.";
     window.setTimeout(() => {
       status.textContent = "";
+      delete status.dataset.state;
     }, 1800);
   }
 
