@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Management;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace Skarmro.GuardService;
@@ -129,8 +130,10 @@ public sealed class GuardWorker : BackgroundService
             var policy = LoadProcessGuardPolicy();
 
             var ownerSid = TryGetProcessOwnerSid(processId);
+            var executablePath = TryGetExecutablePath(processId);
+            var sha256 = TryGetSha256(executablePath);
 
-            if (!ProcessGuardEvaluator.ShouldTerminate(policy, ownerSid, processName))
+            if (!ProcessGuardEvaluator.ShouldTerminate(policy, ownerSid, processName, sha256))
             {
                 return;
             }
@@ -156,6 +159,8 @@ public sealed class GuardWorker : BackgroundService
                 processId,
                 processName,
                 ownerSid,
+                executablePath,
+                sha256,
                 action = killed ? "terminated" : "termination_failed",
                 error
             });
@@ -219,6 +224,38 @@ public sealed class GuardWorker : BackgroundService
         }
 
         return null;
+    }
+
+    private static string? TryGetExecutablePath(int processId)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return process.MainModule?.FileName;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? TryGetSha256(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var hash = SHA256.HashData(stream);
+            return Convert.ToHexString(hash);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static void WriteProcessGuardEvent(object evt)
