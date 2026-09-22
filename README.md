@@ -8,53 +8,54 @@ The product goal is to turn a normal Windows 11 PC into a child-appropriate, par
 
 ## Current status
 
-**Gate 0 / Week 1 prototype**
+### Gate 0 / Week 1 — PASS
 
-The repository currently validates the enforcement foundation only:
+Verified on a real Windows 11 Home PC:
 
 - protected Windows standard child account
 - `SkarmroGuardService` Windows Service
 - automatic boot startup
-- LocalSystem service identity for the prototype
+- LocalSystem service identity
 - protected state in `C:\ProgramData\Skarmro`
-- service heartbeat / verification
-- failure recovery
-- clean uninstall path
+- heartbeat after reboot
+- child cannot stop service
+- child cannot kill service process
+- child cannot write/delete protected SKÄRMRO state
 
-It does **not** yet implement the finished UI, AppLocker policies, Edge Browser Guard, YouTube filtering, routines, cloud sync, or the Junior launcher.
+### Gate 0 / Week 2 — IN PROGRESS
 
-## Quick start
+Current work:
 
-Use a disposable/test Windows 11 machine or VM first.
+- AppLocker capability validation on Windows 11 Home
+- harmless blocked-probe executable
+- non-enforced AppLocker policy simulation
+- safe rollback before real enforcement
 
-Open **Windows Terminal / PowerShell as Administrator** and run:
+## Browser decision
+
+**Google Chrome is the only browser supported in the MVP.**
+
+SKÄRMRO Browser Guard will target Chrome first. Other browsers can be added later if validated demand justifies the extra QA and policy complexity.
+
+## Week 2 quick start
+
+On the Windows test PC, open PowerShell as Administrator:
 
 ```powershell
+cd C:\SKARMRO
+git pull
 Set-ExecutionPolicy -Scope Process Bypass
-.\scripts\01-check-prereqs.ps1
-.\scripts\02-create-child-user.ps1
-.\scripts\03-publish-service.ps1
-.\scripts\04-install-service.ps1
-.\scripts\06-harden-programdata.ps1
-.\scripts\05-verify-service.ps1
+
+.\scripts\week2\01-check-applocker.ps1
+.\scripts\week2\02-build-blocked-probe.ps1
+.\scripts\week2\03-generate-test-policy.ps1
+.\scripts\week2\04-validate-test-policy.ps1
 ```
 
-Reboot Windows and verify again:
+These first Week 2 steps are designed to inspect and simulate AppLocker behavior without intentionally turning on enforcement.
 
-```powershell
-.\scripts\05-verify-service.ps1
-```
-
-## Uninstall Gate 0 prototype
+## Gate 0 service uninstall
 
 ```powershell
 .\scripts\07-uninstall-service.ps1
-```
-
-Optional full cleanup as Administrator:
-
-```powershell
-Remove-Item "C:\Program Files\Skarmro" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item "C:\ProgramData\Skarmro" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-LocalUser -Name "SkarmroChild" -ErrorAction SilentlyContinue
 ```
