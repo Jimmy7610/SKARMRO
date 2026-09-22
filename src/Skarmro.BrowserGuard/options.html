@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SKÄRMRO Browser Guard</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="badge">SKÄRMRO</div>
+      <h1>Browser Guard</h1>
+      <p>Styr vad som filtreras på YouTube i barnets Chrome.</p>
+    </header>
+
+    <section class="card">
+      <label class="toggle-row">
+        <span>
+          <strong>Blockera YouTube Shorts</strong>
+          <small>Döljer Shorts-länkar och skickar bort direktnavigation till /shorts/.</small>
+        </span>
+        <input id="blockShorts" type="checkbox">
+      </label>
+    </section>
+
+    <section class="card">
+      <label for="blockedChannels">
+        <strong>Blockerade YouTube-kanaler</strong>
+        <small>En kanal per rad. Du kan använda @handle eller en full YouTube-kanallänk.</small>
+      </label>
+
+      <textarea id="blockedChannels" rows="10" placeholder="@exempelkanal&#10;https://www.youtube.com/channel/UC123..."></textarea>
+    </section>
+
+    <div class="actions">
+      <button id="save" type="button">Spara</button>
+      <span id="status" role="status" aria-live="polite"></span>
+    </div>
+
+    <section class="note">
+      <strong>Gate 0-prototyp:</strong>
+      Browser Guard är ännu inte ett manipulationssäkert skydd. Protection Health byggs senare för att upptäcka om extensionen stängs av eller tas bort.
+    </section>
+  </main>
+
+  <script src="rules.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
