@@ -22,14 +22,20 @@ Verified on a real Windows 11 Home PC:
 - child cannot kill service process
 - child cannot write/delete protected SKÄRMRO state
 
-### Gate 0 / Week 2 — IN PROGRESS
+### Gate 0 / Week 2 — APP ENFORCEMENT PIVOT
 
-Current work:
+AppLocker enforcement exists in Windows, but the tested Windows 11 Home machine does not expose a supported local administration path for SKÄRMRO.
 
-- AppLocker capability validation on Windows 11 Home
-- harmless blocked-probe executable
-- non-enforced AppLocker policy simulation
-- safe rollback before real enforcement
+Current Home experiment:
+
+- user-aware Process Guard inside `SkarmroGuardService`
+- match child SID
+- block only configured child processes
+- preserve parent/admin access
+- log enforcement events
+- measure latency and bypass resistance
+
+If this experiment is too weak, SKÄRMRO will not pretend otherwise: hardened app enforcement may require Windows 11 Pro+.
 
 ## Browser decision
 
@@ -37,25 +43,25 @@ Current work:
 
 SKÄRMRO Browser Guard will target Chrome first. Other browsers can be added later if validated demand justifies the extra QA and policy complexity.
 
-## Week 2 quick start
+## Process Guard spike
 
-On the Windows test PC, open PowerShell as Administrator:
+Run as Administrator:
 
 ```powershell
 cd C:\SKARMRO
 git pull
 Set-ExecutionPolicy -Scope Process Bypass
 
-.\scripts\week2\01-check-applocker.ps1
 .\scripts\week2\02-build-blocked-probe.ps1
-.\scripts\week2\03-generate-test-policy.ps1
-.\scripts\week2\04-validate-test-policy.ps1
+.\scripts\week2\10-configure-process-guard-spike.ps1
+.\scripts\week2\11-redeploy-process-guard.ps1
+.\scripts\week2\12-verify-process-guard.ps1
 ```
 
-These first Week 2 steps are designed to inspect and simulate AppLocker behavior without intentionally turning on enforcement.
+Then sign in as `SkarmroChild` and run the public desktop probe.
 
-## Gate 0 service uninstall
+Rollback:
 
 ```powershell
-.\scripts\07-uninstall-service.ps1
+.\scripts\week2\13-disable-process-guard-spike.ps1
 ```
