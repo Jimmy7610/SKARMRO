@@ -65,3 +65,25 @@ Rollback:
 ```powershell
 .\scripts\week2\13-disable-process-guard-spike.ps1
 ```
+
+
+## Code signing requirement
+
+WILMA has Smart App Control enabled and Code Integrity has confirmed that the current unsigned Guard build is blocked before service startup.
+
+Production SKÄRMRO will therefore require trusted Authenticode signing. Do not disable Smart App Control on WILMA just to run development builds.
+
+Signing support now exists in:
+
+```text
+scripts/signing/01-check-signing-readiness.ps1
+scripts/signing/02-sign-from-certificate-store.ps1
+scripts/signing/03-verify-signatures.ps1
+scripts/week2/11c-redeploy-signed-guard.ps1
+```
+
+A signed redeploy follows:
+
+```text
+publish -> sign -> verify -> install -> harden
+```
