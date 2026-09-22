@@ -95,10 +95,33 @@
     syncDocumentFlags();
   }
 
+  function channelFromAnchor(anchor) {
+    if (!anchor) return null;
+
+    const href = anchor.getAttribute("href") || anchor.href || "";
+    const key = rules.normalizeChannelKey(href);
+    if (!key) return null;
+
+    const name =
+      (anchor.textContent || "").trim() ||
+      (anchor.getAttribute("aria-label") || "").trim() ||
+      key;
+
+    return { key, name };
+  }
+
   function findCurrentChannel() {
     const candidates = [
-      '#owner a[href^="/@"]',
-      '#owner a[href^="/channel/"]',
+      'ytd-watch-metadata #owner a[href^="/@"]',
+      'ytd-watch-metadata #owner a[href^="/channel/"]',
+      'ytd-watch-metadata ytd-video-owner-renderer a[href^="/@"]',
+      'ytd-watch-metadata ytd-video-owner-renderer a[href^="/channel/"]',
+      '#above-the-fold #owner a[href^="/@"]',
+      '#above-the-fold #owner a[href^="/channel/"]',
+      '#meta-contents ytd-channel-name a[href^="/@"]',
+      '#meta-contents ytd-channel-name a[href^="/channel/"]',
+      'yt-content-metadata-view-model a[href^="/@"]',
+      'yt-content-metadata-view-model a[href^="/channel/"]',
       'ytd-video-owner-renderer a[href^="/@"]',
       'ytd-video-owner-renderer a[href^="/channel/"]',
       'ytd-channel-name a[href^="/@"]',
@@ -106,14 +129,25 @@
     ];
 
     for (const selector of candidates) {
-      const anchor = document.querySelector(selector);
-      const href = anchor?.getAttribute("href");
-      const key = rules.normalizeChannelKey(href || "");
-      if (key) {
-        return {
-          key,
-          name: (anchor.textContent || "").trim() || key
-        };
+      const result = channelFromAnchor(document.querySelector(selector));
+      if (result) return result;
+    }
+
+    const metadataRoots = [
+      "ytd-watch-metadata",
+      "#above-the-fold",
+      "#meta-contents",
+      "yt-content-metadata-view-model"
+    ];
+
+    for (const rootSelector of metadataRoots) {
+      const root = document.querySelector(rootSelector);
+      if (!root) continue;
+
+      const anchors = root.querySelectorAll('a[href^="/@"], a[href^="/channel/"]');
+      for (const anchor of anchors) {
+        const result = channelFromAnchor(anchor);
+        if (result) return result;
       }
     }
 
