@@ -1,0 +1,38 @@
+name: Guard Logic Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Skarmro.GuardService/**"
+      - "tests/Skarmro.GuardLogicTests/**"
+      - ".github/workflows/guard-logic-tests.yml"
+  pull_request:
+    paths:
+      - "src/Skarmro.GuardService/**"
+      - "tests/Skarmro.GuardLogicTests/**"
+      - ".github/workflows/guard-logic-tests.yml"
+
+jobs:
+  guard-logic:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj
+
+      - name: Build
+        run: dotnet build tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj -c Release --no-restore
+
+      - name: Run Guard logic tests
+        run: dotnet run --project tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj -c Release --no-build
