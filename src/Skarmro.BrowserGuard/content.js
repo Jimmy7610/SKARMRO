@@ -95,6 +95,53 @@
     syncDocumentFlags();
   }
 
+  function findCurrentChannel() {
+    const candidates = [
+      '#owner a[href^="/@"]',
+      '#owner a[href^="/channel/"]',
+      'ytd-video-owner-renderer a[href^="/@"]',
+      'ytd-video-owner-renderer a[href^="/channel/"]',
+      'ytd-channel-name a[href^="/@"]',
+      'ytd-channel-name a[href^="/channel/"]'
+    ];
+
+    for (const selector of candidates) {
+      const anchor = document.querySelector(selector);
+      const href = anchor?.getAttribute("href");
+      const key = rules.normalizeChannelKey(href || "");
+      if (key) {
+        return {
+          key,
+          name: (anchor.textContent || "").trim() || key
+        };
+      }
+    }
+
+    const pageKey = rules.normalizeChannelKey(location.href);
+    if (pageKey) {
+      const heading =
+        document.querySelector("ytd-c4-tabbed-header-renderer #channel-name") ||
+        document.querySelector("yt-page-header-view-model h1") ||
+        document.querySelector("h1");
+
+      return {
+        key: pageKey,
+        name: (heading?.textContent || "").trim() || pageKey
+      };
+    }
+
+    return null;
+  }
+
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "skarmro:get-current-channel") {
+      sendResponse({
+        ok: true,
+        channel: findCurrentChannel()
+      });
+    }
+  });
+
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local" || !changes.browserPolicy) return;
 
