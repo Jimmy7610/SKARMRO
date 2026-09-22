@@ -9,31 +9,39 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     throw "Run PowerShell as Administrator."
 }
 
+$adminSid = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-544")
+$usersSid = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-545")
+$adminGroup = Get-LocalGroup -SID $adminSid
+$usersGroup = Get-LocalGroup -SID $usersSid
+
 if (Get-LocalUser -Name $ChildUser -ErrorAction SilentlyContinue) {
     Write-Host "User '$ChildUser' already exists. No change made." -ForegroundColor Yellow
 } else {
     $Password = Read-Host "Choose a password for the child account" -AsSecureString
-    New-LocalUser `
-        -Name $ChildUser `
-        -Password $Password `
-        -Description "SKARMRO protected child account" `
-        -PasswordNeverExpires:$true `
-        -UserMayNotChangePassword:$false
 
-    Add-LocalGroupMember -Group "Users" -Member $ChildUser -ErrorAction SilentlyContinue
+    $newUserParams = @{
+        Name = $ChildUser
+        Password = $Password
+        Description = "SKARMRO protected child account"
+        PasswordNeverExpires = $true
+        UserMayNotChangePassword = $false
+    }
+
+    New-LocalUser @newUserParams
+    Add-LocalGroupMember -Group $usersGroup.Name -Member $ChildUser -ErrorAction SilentlyContinue
     Write-Host "Created standard user '$ChildUser'." -ForegroundColor Green
 }
 
 try {
-    Remove-LocalGroupMember -Group "Administrators" -Member $ChildUser -ErrorAction Stop
-    Write-Host "Removed '$ChildUser' from Administrators." -ForegroundColor Green
+    Remove-LocalGroupMember -Group $adminGroup.Name -Member $ChildUser -ErrorAction Stop
+    Write-Host "Removed '$ChildUser' from local Administrators." -ForegroundColor Green
 }
 catch {
-    Write-Host "'$ChildUser' is not in Administrators (good)." -ForegroundColor Green
+    Write-Host "'$ChildUser' is not in local Administrators (good)." -ForegroundColor Green
 }
 
 Write-Host ""
 Write-Host "Verification:" -ForegroundColor Cyan
 Get-LocalUser -Name $ChildUser | Format-List Name, Enabled, Description
 Write-Host ""
-Get-LocalGroupMember -Group "Administrators" | Select-Object Name | Format-Table -AutoSize
+Get-LocalGroupMember -SID $adminSid | Select-Object Name | Format-Table -AutoSize
