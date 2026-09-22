@@ -32,5 +32,13 @@ jobs:
         shell: pwsh
         run: Get-Content src/Skarmro.BrowserGuard/manifest.json -Raw | ConvertFrom-Json | Out-Null
 
+      - name: Check extension JavaScript syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem src/Skarmro.BrowserGuard -Filter *.js | ForEach-Object {
+            node --check $_.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
       - name: Run Browser Guard rule tests
         run: node --test tests/browser-guard-rules.test.cjs
