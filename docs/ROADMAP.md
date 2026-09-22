@@ -9,13 +9,30 @@
 - Child cannot stop/modify service
 - Verified on Windows 11 Home (WILMA)
 
-## Week 2 — App enforcement
-- AppLocker capability spike on Windows 11 Home
-- Build dedicated SKÄRMRO blocked-probe executable
-- Validate policy with Test-AppLockerPolicy before enforcement
-- Allow/block application rules
-- Test portable/renamed executables
-- Maintain a tested rollback path
+## Week 2 — App enforcement — PIVOT IN PROGRESS
+### AppLocker finding
+- Application Identity engine exists on WILMA
+- AppLocker PowerShell module missing
+- Local Security Policy missing
+- Local Group Policy Editor missing
+- No undocumented registry hacks allowed
+- AppLocker retained as future hardened adapter for editions where administration is viable
+
+### Windows Home experiment
+- User-aware Process Guard inside SKÄRMRO SYSTEM service
+- Match child SID + blocked process name
+- Kill only blocked child process
+- Parent/admin launches must remain unaffected
+- Record local enforcement events
+- Measure latency and bypasses
+- Maintain tested rollback
+
+### Kill criteria
+- meaningful actions possible before termination
+- unreliable owner SID resolution
+- trivial rename/path bypass remains unsolved
+- unacceptable overhead
+- service instability
 
 ## Week 3 — Managed Chrome
 - Chrome installation/detection
