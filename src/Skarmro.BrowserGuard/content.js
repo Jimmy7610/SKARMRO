@@ -1,21 +1,18 @@
 (() => {
   const rules = globalThis.SkarmroBrowserRules;
-  const policy = globalThis.SkarmroBrowserPolicy ?? {
+  if (!rules) return;
+
+  const defaultPolicy = {
     blockShorts: true,
     blockedChannels: []
   };
 
-  if (!rules) return;
+  let policy = { ...defaultPolicy };
 
   const redirectIfBlockedNavigation = () => {
     const decision = rules.classifyUrl(location.href, policy);
 
-    if (decision.action === "block-shorts") {
-      location.replace("https://www.youtube.com/");
-      return true;
-    }
-
-    if (decision.action === "hide-channel") {
+    if (decision.action === "block-shorts" || decision.action === "hide-channel") {
       location.replace("https://www.youtube.com/");
       return true;
     }
@@ -49,8 +46,6 @@
     }
   };
 
-  if (redirectIfBlockedNavigation()) return;
-
   const scan = () => {
     if (redirectIfBlockedNavigation()) return;
     hideBlockedContent();
@@ -74,9 +69,34 @@
     }, 500);
   };
 
-  if (document.documentElement) {
-    startObserver();
-  } else {
-    document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+  async function loadPolicy() {
+    const stored = await chrome.storage.local.get("browserPolicy");
+    policy = {
+      ...defaultPolicy,
+      ...(stored.browserPolicy || {})
+    };
   }
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local" || !changes.browserPolicy) return;
+
+    policy = {
+      ...defaultPolicy,
+      ...(changes.browserPolicy.newValue || {})
+    };
+
+    scan();
+  });
+
+  loadPolicy()
+    .catch(() => {
+      policy = { ...defaultPolicy };
+    })
+    .finally(() => {
+      if (document.documentElement) {
+        startObserver();
+      } else {
+        document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+      }
+    });
 })();
