@@ -33,6 +33,8 @@
       : [];
   }
 
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   async function detectCurrentChannel() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -42,14 +44,25 @@
       return;
     }
 
-    try {
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: "skarmro:get-current-channel"
-      });
+    currentChannel = null;
+    channelName.textContent = "Letar efter kanal…";
+    toggleChannel.disabled = true;
 
-      currentChannel = response?.channel || null;
-    } catch {
-      currentChannel = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          type: "skarmro:get-current-channel"
+        });
+
+        if (response?.channel) {
+          currentChannel = response.channel;
+          break;
+        }
+      } catch {
+        // The content script may not be ready yet.
+      }
+
+      await delay(350);
     }
 
     render();
