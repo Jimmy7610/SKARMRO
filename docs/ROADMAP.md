@@ -40,6 +40,9 @@
 - Keep Smart App Control enabled on WILMA
 - Test enforcement decision logic independently from service startup
 - Added zero-dependency Guard logic test harness
+- 12/12 decision tests green on WILMA
+- Blocked-app recognition now covers process name + SHA-256 rename resistance
+- Structured decision reasons added for future Policy Receipts
 
 ### Smart App Control finding
 - WILMA has Smart App Control enabled
