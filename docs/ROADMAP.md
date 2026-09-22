@@ -34,6 +34,13 @@
 - unacceptable overhead
 - service instability
 
+### Smart App Control finding
+- WILMA has Smart App Control enabled
+- Code Integrity events 3077 and 3033 block the unsigned Week 2 Guard build
+- Production binaries must be trusted Authenticode signed
+- Signing pipeline added
+- Do not disable Smart App Control on the primary Home validation machine
+
 ## Week 3 — Managed Chrome
 - Chrome installation/detection
 - Chrome Windows policy baseline
