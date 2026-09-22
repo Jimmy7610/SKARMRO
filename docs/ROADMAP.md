@@ -58,7 +58,7 @@
 - Browser Guard Manifest V3 prototype — BUILT
 - Shorts URL classification — BUILT
 - Shorts link/shelf hiding prototype — BUILT
-- Browser Guard CI — BUILT
+- Browser Guard CI — PASS
 - Chrome Web Store distribution path
 - Force-install / anti-disable validation
 - Block unsupported alternate browsers for child account
