@@ -16,11 +16,13 @@ if (-not (Test-Path $probe)) {
 }
 
 $child = Get-LocalUser -Name "SkarmroChild" -ErrorAction Stop
+$probeHash = (Get-FileHash $probe -Algorithm SHA256).Hash
 
 $policy = @{
     enabled = $true
     childSid = $child.SID.Value
     blockedProcessNames = @("Skarmro.BlockedProbe.exe")
+    blockedSha256 = @($probeHash)
 }
 
 New-Item -ItemType Directory -Path $programData -Force | Out-Null
@@ -32,5 +34,7 @@ Write-Host "Process Guard spike configured." -ForegroundColor Green
 Write-Host ("Child SID: " + $child.SID.Value)
 Write-Host ("Policy: " + $policyPath)
 Write-Host ("Probe: " + $publicProbe)
+Write-Host ("Probe SHA256: " + $probeHash)
 Write-Host ""
-Write-Host "Only Skarmro.BlockedProbe.exe is blocked, and only for SkarmroChild." -ForegroundColor Yellow
+Write-Host "The probe is blocked for SkarmroChild by both process name and SHA256." -ForegroundColor Yellow
+Write-Host "Renaming the probe should not bypass the hash rule." -ForegroundColor Yellow
