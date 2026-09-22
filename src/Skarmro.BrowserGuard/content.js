@@ -9,6 +9,12 @@
 
   let policy = { ...defaultPolicy };
 
+  const syncDocumentFlags = () => {
+    if (!document.documentElement) return;
+    document.documentElement.dataset.skarmroBlockShorts =
+      policy.blockShorts !== false ? "true" : "false";
+  };
+
   const redirectIfBlockedNavigation = () => {
     const decision = rules.classifyUrl(location.href, policy);
 
@@ -39,9 +45,20 @@
     }
 
     if (policy.blockShorts !== false) {
-      for (const shelf of root.querySelectorAll?.("ytd-reel-shelf-renderer") ?? []) {
-        shelf.style.setProperty("display", "none", "important");
-        shelf.dataset.skarmroHidden = "shorts-shelf";
+      const shortsSelectors = [
+        "ytd-reel-shelf-renderer",
+        "ytm-shorts-lockup-view-model-v2",
+        'ytd-rich-item-renderer:has(a[href^="/shorts/"])',
+        'ytd-video-renderer:has(a[href^="/shorts/"])',
+        'ytd-grid-video-renderer:has(a[href^="/shorts/"])',
+        'yt-lockup-view-model:has(a[href^="/shorts/"])'
+      ];
+
+      for (const selector of shortsSelectors) {
+        for (const node of root.querySelectorAll?.(selector) ?? []) {
+          node.style.setProperty("display", "none", "important");
+          node.dataset.skarmroHidden = "shorts";
+        }
       }
     }
   };
@@ -75,6 +92,7 @@
       ...defaultPolicy,
       ...(stored.browserPolicy || {})
     };
+    syncDocumentFlags();
   }
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -85,12 +103,14 @@
       ...(changes.browserPolicy.newValue || {})
     };
 
+    syncDocumentFlags();
     scan();
   });
 
   loadPolicy()
     .catch(() => {
       policy = { ...defaultPolicy };
+      syncDocumentFlags();
     })
     .finally(() => {
       if (document.documentElement) {
