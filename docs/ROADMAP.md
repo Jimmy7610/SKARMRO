@@ -34,6 +34,13 @@
 - unacceptable overhead
 - service instability
 
+### Zero-budget development
+- Gate 0 budget target: 0 SEK
+- No code-signing purchase required during early development
+- Keep Smart App Control enabled on WILMA
+- Test enforcement decision logic independently from service startup
+- Added zero-dependency Guard logic test harness
+
 ### Smart App Control finding
 - WILMA has Smart App Control enabled
 - Code Integrity events 3077 and 3033 block the unsigned Week 2 Guard build
