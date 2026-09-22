@@ -1,22 +1,47 @@
 namespace Skarmro.GuardService;
 
+public enum ProcessGuardDecisionReason
+{
+    PolicyMissing,
+    PolicyDisabled,
+    MissingChildSid,
+    MissingOwnerSid,
+    DifferentUser,
+    BlockedByName,
+    BlockedByHash,
+    Allowed
+}
+
+public sealed record ProcessGuardDecision(
+    bool ShouldTerminate,
+    ProcessGuardDecisionReason Reason);
+
 public static class ProcessGuardEvaluator
 {
-    public static bool ShouldTerminate(
+    public static ProcessGuardDecision Evaluate(
         ProcessGuardPolicy? policy,
         string? ownerSid,
         string? processName,
         string? sha256 = null)
     {
-        if (policy is null || !policy.Enabled)
+        if (policy is null)
         {
-            return false;
+            return new(false, ProcessGuardDecisionReason.PolicyMissing);
         }
 
-        if (string.IsNullOrWhiteSpace(policy.ChildSid) ||
-            string.IsNullOrWhiteSpace(ownerSid))
+        if (!policy.Enabled)
         {
-            return false;
+            return new(false, ProcessGuardDecisionReason.PolicyDisabled);
+        }
+
+        if (string.IsNullOrWhiteSpace(policy.ChildSid))
+        {
+            return new(false, ProcessGuardDecisionReason.MissingChildSid);
+        }
+
+        if (string.IsNullOrWhiteSpace(ownerSid))
+        {
+            return new(false, ProcessGuardDecisionReason.MissingOwnerSid);
         }
 
         if (!string.Equals(
@@ -24,7 +49,7 @@ public static class ProcessGuardEvaluator
                 policy.ChildSid,
                 StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            return new(false, ProcessGuardDecisionReason.DifferentUser);
         }
 
         var nameBlocked =
@@ -33,14 +58,31 @@ public static class ProcessGuardEvaluator
                 processName,
                 StringComparer.OrdinalIgnoreCase);
 
+        if (nameBlocked)
+        {
+            return new(true, ProcessGuardDecisionReason.BlockedByName);
+        }
+
         var hashBlocked =
             !string.IsNullOrWhiteSpace(sha256) &&
             policy.BlockedSha256.Contains(
                 NormalizeHash(sha256),
                 StringComparer.OrdinalIgnoreCase);
 
-        return nameBlocked || hashBlocked;
+        if (hashBlocked)
+        {
+            return new(true, ProcessGuardDecisionReason.BlockedByHash);
+        }
+
+        return new(false, ProcessGuardDecisionReason.Allowed);
     }
+
+    public static bool ShouldTerminate(
+        ProcessGuardPolicy? policy,
+        string? ownerSid,
+        string? processName,
+        string? sha256 = null) =>
+        Evaluate(policy, ownerSid, processName, sha256).ShouldTerminate;
 
     private static string NormalizeHash(string hash) =>
         hash.Replace(" ", "", StringComparison.Ordinal).Trim();
