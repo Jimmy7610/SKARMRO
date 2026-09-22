@@ -40,6 +40,48 @@
       }
     },
 
+    normalizeBlockedChannelInput(value) {
+      if (typeof value !== "string") {
+        return { ok: false, reason: "invalid" };
+      }
+
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return { ok: false, reason: "empty" };
+      }
+
+      if (trimmed.startsWith("@") && trimmed.length > 1) {
+        return {
+          ok: true,
+          key: "handle:" + trimmed.slice(1).toLowerCase()
+        };
+      }
+
+      if (/^UC[A-Za-z0-9_-]+$/.test(trimmed)) {
+        return {
+          ok: true,
+          key: "channel:" + trimmed.toLowerCase()
+        };
+      }
+
+      try {
+        const url = new URL(trimmed, "https://www.youtube.com");
+
+        if (url.pathname === "/watch" || api.isShortsPath(url.pathname)) {
+          return { ok: false, reason: "video-url" };
+        }
+      } catch {
+        return { ok: false, reason: "invalid" };
+      }
+
+      const channelKey = api.normalizeChannelKey(trimmed);
+      if (channelKey) {
+        return { ok: true, key: channelKey };
+      }
+
+      return { ok: false, reason: "not-channel" };
+    },
+
     classifyUrl(value, policy = {}) {
       try {
         const url = new URL(value, "https://www.youtube.com");
