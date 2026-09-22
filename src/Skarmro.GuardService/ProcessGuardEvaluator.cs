@@ -5,7 +5,8 @@ public static class ProcessGuardEvaluator
     public static bool ShouldTerminate(
         ProcessGuardPolicy? policy,
         string? ownerSid,
-        string? processName)
+        string? processName,
+        string? sha256 = null)
     {
         if (policy is null || !policy.Enabled)
         {
@@ -13,8 +14,7 @@ public static class ProcessGuardEvaluator
         }
 
         if (string.IsNullOrWhiteSpace(policy.ChildSid) ||
-            string.IsNullOrWhiteSpace(ownerSid) ||
-            string.IsNullOrWhiteSpace(processName))
+            string.IsNullOrWhiteSpace(ownerSid))
         {
             return false;
         }
@@ -27,8 +27,21 @@ public static class ProcessGuardEvaluator
             return false;
         }
 
-        return policy.BlockedProcessNames.Contains(
-            processName,
-            StringComparer.OrdinalIgnoreCase);
+        var nameBlocked =
+            !string.IsNullOrWhiteSpace(processName) &&
+            policy.BlockedProcessNames.Contains(
+                processName,
+                StringComparer.OrdinalIgnoreCase);
+
+        var hashBlocked =
+            !string.IsNullOrWhiteSpace(sha256) &&
+            policy.BlockedSha256.Contains(
+                NormalizeHash(sha256),
+                StringComparer.OrdinalIgnoreCase);
+
+        return nameBlocked || hashBlocked;
     }
+
+    private static string NormalizeHash(string hash) =>
+        hash.Replace(" ", "", StringComparison.Ordinal).Trim();
 }
