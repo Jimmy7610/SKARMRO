@@ -3,70 +3,243 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SKÄRMRO Browser Guard</title>
+  <title>SKÄRMRO Parent App</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <main class="shell">
-    <header>
-      <div class="badge">SKÄRMRO</div>
-      <h1>Browser Guard</h1>
-      <p>Automatiskt barnskydd för YouTube, med manuella regler som komplement.</p>
-    </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">S</div>
+        <div>
+          <div class="brand-name">SKÄRMRO</div>
+          <div class="brand-sub">Parent App</div>
+        </div>
+      </div>
 
-    <section class="card">
-      <label class="toggle-row">
-        <span>
-          <strong>Auto Protect</strong>
-          <small>Filtrerar automatiskt vanliga olämpliga ord och kategorier på svenska och engelska.</small>
-        </span>
-        <input id="autoProtect" type="checkbox">
-      </label>
-    </section>
+      <nav class="nav">
+        <button class="nav-item active" data-view="overview">Översikt</button>
+        <button class="nav-item" data-view="protection">Webbskydd</button>
+        <button class="nav-item" data-view="routines">Rutiner</button>
+        <button class="nav-item" data-view="apps">Appar</button>
+        <button class="nav-item" data-view="health">Protection Health</button>
+      </nav>
 
-    <section class="card">
-      <label class="toggle-row">
-        <span>
-          <strong>Blockera YouTube Shorts</strong>
-          <small>Döljer Shorts-länkar och skickar bort direktnavigation till /shorts/.</small>
-        </span>
-        <input id="blockShorts" type="checkbox">
-      </label>
-    </section>
+      <div class="sidebar-footer">
+        <div class="child-pill">
+          <span class="status-dot"></span>
+          <div>
+            <strong>SkarmroChild</strong>
+            <small>Windows-barnkonto</small>
+          </div>
+        </div>
+        <div class="version">Browser Guard <span id="appVersion">–</span></div>
+      </div>
+    </aside>
 
-    <section class="card">
-      <strong>Auto Protect-kategorier</strong>
-      <small>Vuxeninnehåll · Droger/vape · Gambling · Grovt våld · Självskada · Grovt språk</small>
-    </section>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">SKÄRMRO · Boundary, not surveillance</div>
+          <h1 id="viewTitle">Översikt</h1>
+        </div>
+        <div class="top-actions">
+          <div id="saveState" class="save-state">Alla ändringar sparade</div>
+          <button id="saveAll" class="primary">Spara ändringar</button>
+        </div>
+      </header>
 
-    <section class="card">
-      <label for="customBlockedWords">
-        <strong>Egna blockerade ord</strong>
-        <small>Ett ord eller en fras per rad. Dessa blockeras även om Auto Protect stängs av.</small>
-      </label>
-      <textarea id="customBlockedWords" rows="6" placeholder="exempelord&#10;exempelfras"></textarea>
-    </section>
+      <section class="view active" data-view-panel="overview">
+        <div class="hero">
+          <div>
+            <div class="hero-kicker">Skyddet är aktivt</div>
+            <h2>En lugnare Windows-dator för barn.</h2>
+            <p>SKÄRMRO blockerar Shorts, filtrerar olämpligt YouTube-innehåll automatiskt och låter dig lägga egna regler utan att läsa barnets privata aktivitet.</p>
+          </div>
+          <div class="shield-orb">
+            <div class="shield-check">✓</div>
+            <span>Skydd aktivt</span>
+          </div>
+        </div>
 
-    <section class="card">
-      <label for="blockedChannels">
-        <strong>Blockerade YouTube-kanaler</strong>
-        <small>Kan normalt blockeras direkt från SKÄRMRO-knappen på en video. Du kan också använda @handle eller kanalens adress här.</small>
-      </label>
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span>Auto Protect</span>
+            <strong id="overviewAutoProtect">På</strong>
+            <small>Automatisk innehållsfiltrering</small>
+          </article>
+          <article class="metric-card">
+            <span>YouTube Shorts</span>
+            <strong id="overviewShorts">Blockeras</strong>
+            <small>Döljs och kan inte öppnas</small>
+          </article>
+          <article class="metric-card">
+            <span>Aktiv rutin</span>
+            <strong id="overviewRoutine">Ingen</strong>
+            <small id="overviewRoutineHint">Normal skyddsnivå</small>
+          </article>
+          <article class="metric-card">
+            <span>Filtrerat denna session</span>
+            <strong id="overviewFiltered">0</strong>
+            <small>Endast anonym räknare</small>
+          </article>
+        </div>
 
-      <textarea id="blockedChannels" rows="8" placeholder="@exempelkanal&#10;https://www.youtube.com/channel/UC123..."></textarea>
-    </section>
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-kicker">SNABBSTATUS</span>
+                <h3>Protection Health</h3>
+              </div>
+              <span class="health-badge good">Browser Guard OK</span>
+            </div>
+            <div class="health-list">
+              <div><span>Chrome-extension</span><strong class="good-text">Aktiv</strong></div>
+              <div><span>Auto Protect</span><strong id="healthAutoOverview">Aktiv</strong></div>
+              <div><span>Shorts-skydd</span><strong id="healthShortsOverview">Aktiv</strong></div>
+              <div><span>Native Windows Guard</span><strong class="warn-text">Väntar på signerad build</strong></div>
+            </div>
+          </article>
 
-    <div class="actions">
-      <button id="save" type="button">Spara</button>
-      <span id="status" role="status" aria-live="polite"></span>
-    </div>
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-kicker">IDAG</span>
+                <h3>Rutiner</h3>
+              </div>
+              <button class="ghost jump" data-jump="routines">Hantera</button>
+            </div>
+            <div id="todayRoutines" class="routine-preview"></div>
+          </article>
+        </div>
+      </section>
 
-    <section class="note">
-      <strong>Gate 0-prototyp:</strong>
-      Auto Protect arbetar automatiskt men kan inte garantera perfekt innehållsklassning. Protection Health byggs senare för att upptäcka om extensionen stängs av eller tas bort.
-    </section>
-  </main>
+      <section class="view" data-view-panel="protection">
+        <div class="section-intro">
+          <div>
+            <span class="section-kicker">WEBBSKYDD</span>
+            <h2>Automatiskt först. Manuellt när du vill.</h2>
+            <p>Auto Protect är på från start. Föräldern kan lägga till egna undantag och regler ovanpå det automatiska skyddet.</p>
+          </div>
+        </div>
 
+        <div class="settings-grid">
+          <article class="panel setting-panel">
+            <label class="switch-row">
+              <div>
+                <strong>Auto Protect</strong>
+                <small>Automatisk filtrering på svenska och engelska.</small>
+              </div>
+              <input id="autoProtect" type="checkbox" class="switch">
+            </label>
+          </article>
+          <article class="panel setting-panel">
+            <label class="switch-row">
+              <div>
+                <strong>Blockera YouTube Shorts</strong>
+                <small>Döljer Shorts och stoppar direktnavigation.</small>
+              </div>
+              <input id="blockShorts" type="checkbox" class="switch">
+            </label>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="section-kicker">KATEGORIER</span>
+              <h3>Auto Protect-kategorier</h3>
+            </div>
+          </div>
+          <div class="category-grid">
+            <label class="category-card"><input id="catAdult" type="checkbox"><span><strong>Vuxeninnehåll</strong><small>Porr, sexuellt innehåll, nakenhet</small></span></label>
+            <label class="category-card"><input id="catDrugs" type="checkbox"><span><strong>Droger & vape</strong><small>Narkotika, cannabis, vaping</small></span></label>
+            <label class="category-card"><input id="catGambling" type="checkbox"><span><strong>Gambling</strong><small>Casino, betting, slots, jackpot</small></span></label>
+            <label class="category-card"><input id="catViolence" type="checkbox"><span><strong>Grovt våld</strong><small>Gore, avrättningar, tortyr</small></span></label>
+            <label class="category-card"><input id="catSelfHarm" type="checkbox"><span><strong>Självskada</strong><small>Självskada och självmordsinnehåll</small></span></label>
+            <label class="category-card"><input id="catProfanity" type="checkbox"><span><strong>Grovt språk</strong><small>Starkt explicit språk</small></span></label>
+          </div>
+        </article>
+
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head"><div><span class="section-kicker">MANUELLT</span><h3>Egna blockerade ord</h3></div></div>
+            <p class="muted">Ett ord eller en fras per rad. Dessa gäller även när Auto Protect är av.</p>
+            <textarea id="customBlockedWords" rows="9" placeholder="skrämmande challenge&#10;egen fras"></textarea>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><span class="section-kicker">MANUELLT</span><h3>Blockerade kanaler</h3></div></div>
+            <p class="muted">Blockera normalt direkt från SKÄRMRO-popupen på en video. Här kan du också hantera listan.</p>
+            <textarea id="blockedChannels" rows="9" placeholder="@kanalnamn"></textarea>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" data-view-panel="routines">
+        <div class="section-intro">
+          <div>
+            <span class="section-kicker">RUTINER</span>
+            <h2>Regler som följer familjens dag.</h2>
+            <p>Skola och Läxor skärper Browser Guard automatiskt. Läggdags blockerar YouTube helt. Fritid använder normal skyddsnivå.</p>
+          </div>
+        </div>
+        <div id="routineEditor" class="routine-editor"></div>
+        <div class="info-callout">Rutinerna styr Browser Guard redan nu. App- och Windows-regler kopplas in när den signerade Native Guard-runtime är tillgänglig.</div>
+      </section>
+
+      <section class="view" data-view-panel="apps">
+        <div class="section-intro">
+          <div>
+            <span class="section-kicker">APPAR</span>
+            <h2>Planera vilka Windows-appar barnet får använda.</h2>
+            <p>Reglerna kan konfigureras nu och är förberedda för Native Guard. Enforcement på WILMA väntar på signerad Windows-runtime på grund av Smart App Control.</p>
+          </div>
+          <span class="health-badge warn">Runtime väntar på signering</span>
+        </div>
+
+        <div class="two-col">
+          <article class="panel">
+            <h3>Tillåtna appar</h3>
+            <p class="muted">Ett namn per rad. Exempel: Minecraft, Calculator, Paint.</p>
+            <textarea id="allowedApps" rows="12" placeholder="Minecraft&#10;Calculator&#10;Paint"></textarea>
+          </article>
+          <article class="panel">
+            <h3>Blockerade appar</h3>
+            <p class="muted">Reglerna lagras nu men native enforcement aktiveras först när Guard kan köras signerat.</p>
+            <textarea id="blockedApps" rows="12" placeholder="PowerShell&#10;Registry Editor"></textarea>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" data-view-panel="health">
+        <div class="section-intro">
+          <div>
+            <span class="section-kicker">PROTECTION HEALTH</span>
+            <h2>Du ska veta när skyddet faktiskt fungerar.</h2>
+            <p>SKÄRMRO skiljer på “regel sparad” och “regel faktiskt aktiv”.</p>
+          </div>
+        </div>
+
+        <div class="health-grid">
+          <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Browser Guard</strong><small>Extensionen kör och kan filtrera YouTube.</small></div><b>OK</b></article>
+          <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Auto Protect</strong><small id="healthAutoText">Aktivt och konfigurerat.</small></div><b id="healthAutoBadge">OK</b></article>
+          <article class="health-card warn-card"><span class="health-icon">!</span><div><strong>Native Windows Guard</strong><small>Beslutskärnan är testad, men WILMA blockerar osignerad runtime via Smart App Control.</small></div><b>VÄNTAR</b></article>
+          <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Integritet</strong><small>Ingen keylogging, skärminspelning eller privat meddelandeläsning.</small></div><b>OK</b></article>
+        </div>
+
+        <article class="panel">
+          <h3>Data som Browser Guard sparar</h3>
+          <div class="privacy-list">
+            <div><strong>Ja</strong><span>Skyddsinställningar, blockerade kanaler/ord, rutiner och anonyma sessionsräknare.</span></div>
+            <div><strong>Nej</strong><span>Videotitlar, tittarhistorik, lösenord, privata meddelanden, tangenttryckningar, kamera eller mikrofon.</span></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="rules.js"></script>
   <script src="options.js"></script>
 </body>
