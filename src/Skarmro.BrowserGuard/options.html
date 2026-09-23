@@ -89,6 +89,21 @@
           <article class="panel">
             <div class="panel-head">
               <div>
+                <span class="section-kicker">SNABBKONTROLLER</span>
+                <h3>Nu direkt</h3>
+              </div>
+            </div>
+            <div class="quick-actions">
+              <button class="ghost quick-action" data-override="pause" data-minutes="30">Pausa YouTube 30 min</button>
+              <button class="ghost quick-action" data-override="access" data-minutes="15">Ge 15 min extra tid</button>
+              <button class="ghost quick-action" data-override="clear">Återställ nu</button>
+            </div>
+            <p id="overrideStatus" class="muted">Ingen tillfällig ändring aktiv.</p>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
                 <span class="section-kicker">SNABBSTATUS</span>
                 <h3>Protection Health</h3>
               </div>
@@ -227,6 +242,11 @@
           <article class="health-card warn-card"><span class="health-icon">!</span><div><strong>Native Windows Guard</strong><small>Beslutskärnan är testad, men WILMA blockerar osignerad runtime via Smart App Control.</small></div><b>VÄNTAR</b></article>
           <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Integritet</strong><small>Ingen keylogging, skärminspelning eller privat meddelandeläsning.</small></div><b>OK</b></article>
         </div>
+
+        <article class="panel">
+          <div class="panel-head"><div><span class="section-kicker">POLICY RECEIPTS</span><h3>Senaste skyddshändelser</h3></div></div>
+          <div id="receiptList" class="receipt-list"></div>
+        </article>
 
         <article class="panel">
           <h3>Data som Browser Guard sparar</h3>
