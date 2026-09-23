@@ -45,3 +45,7 @@ SKÄRMRO follows the principle **Boundary, not surveillance**. See `docs/PRIVACY
 SKÄRMRO is licensed under **GPL-3.0-only**.
 
 The complete corresponding source for this release is available from this release tag and its automatically generated GitHub source archives.
+
+## Code signing
+
+Free code signing provided by SignPath.io, certificate by SignPath Foundation.
