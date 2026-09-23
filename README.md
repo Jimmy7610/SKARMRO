@@ -176,3 +176,27 @@ This validation does not install or start unsigned native binaries and does not 
 The newest native Guard, Parent App and Junior Launcher cannot be deployed on WILMA until the binaries are Authenticode-signed with a trusted code-signing identity. The repository contains the signing and deployment pipeline, but the actual trusted certificate is still an external prerequisite.
 
 Do not disable Smart App Control to bypass this.
+
+
+## License
+
+SKÄRMRO is open-source software licensed under **GNU GPL v3.0 only (GPL-3.0-only)**.
+
+See [LICENSE](LICENSE) for the complete license text.
+
+The software may be used, modified and redistributed under GPL-3.0-only, including commercially, subject to the license terms. SKÄRMRO is not offered under a proprietary commercial dual license.
+
+Copyright (C) 2026 Jimmy Eliasson.
+
+## Code signing policy
+
+SKÄRMRO is being prepared for SignPath Foundation open-source code signing.
+
+- [Code signing policy](docs/CODE-SIGNING-POLICY.md)
+- [SignPath Foundation readiness](docs/SIGNPATH-FOUNDATION-CHECKLIST.md)
+- [Privacy policy](docs/PRIVACY.md)
+- [Uninstallation](docs/UNINSTALL.md)
+
+Free code signing provided by SignPath.io, certificate by SignPath Foundation.
+
+The SignPath release workflow will only be enabled after the project is accepted and real SignPath project/policy identifiers have been issued.
