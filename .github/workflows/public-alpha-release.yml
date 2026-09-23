@@ -1,0 +1,140 @@
+name: Public Alpha Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/release/v0.1.0-alpha.trigger"
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_VERSION: "0.1.0-alpha"
+  RELEASE_TAG: "v0.1.0-alpha"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Validate Browser Guard manifest
+        shell: pwsh
+        run: Get-Content src/Skarmro.BrowserGuard/manifest.json -Raw | ConvertFrom-Json | Out-Null
+
+      - name: Check Browser Guard JavaScript syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem src/Skarmro.BrowserGuard -Filter *.js | ForEach-Object {
+            node --check $_.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Run Browser Guard tests
+        shell: pwsh
+        run: |
+          node --test tests/browser-guard-rules.test.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --test tests/browser-guard-routines.test.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run Guard logic tests
+        shell: pwsh
+        run: |
+          dotnet restore tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj
+          dotnet build tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj -c Release --no-restore
+          dotnet run --project tests/Skarmro.GuardLogicTests/Skarmro.GuardLogicTests.csproj -c Release --no-build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Publish native components
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          dotnet publish src/Skarmro.GuardService/Skarmro.GuardService.csproj `
+            -c Release -r win-x64 --self-contained false `
+            -p:Version=0.1.0 -p:InformationalVersion=$env:RELEASE_VERSION `
+            -o dist/GuardService
+
+          dotnet publish src/Skarmro.ParentApp/Skarmro.ParentApp.csproj `
+            -c Release -r win-x64 --self-contained false `
+            -p:Version=0.1.0 -p:InformationalVersion=$env:RELEASE_VERSION `
+            -o dist/ParentApp
+
+          dotnet publish src/Skarmro.JuniorLauncher/Skarmro.JuniorLauncher.csproj `
+            -c Release -r win-x64 --self-contained false `
+            -p:Version=0.1.0 -p:InformationalVersion=$env:RELEASE_VERSION `
+            -o dist/JuniorLauncher
+
+      - name: Add license and source provenance
+        shell: pwsh
+        run: |
+          $sourceText = "SKARMRO $env:RELEASE_TAG`r`n`r`nCorresponding source:`r`nhttps://github.com/Jimmy7610/SKARMRO/tree/$env:RELEASE_TAG`r`n`r`nBuild commit:`r`nhttps://github.com/Jimmy7610/SKARMRO/commit/$env:GITHUB_SHA`r`n`r`nLicense: GPL-3.0-only"
+          $unsignedText = "UNSIGNED ALPHA BUILD`r`n`r`nThese native binaries are not yet Authenticode-signed.`r`nDo not disable Smart App Control or other Windows security features to run them."
+
+          foreach ($dir in @("dist/GuardService", "dist/ParentApp", "dist/JuniorLauncher")) {
+            Copy-Item LICENSE (Join-Path $dir "LICENSE")
+            Set-Content -Path (Join-Path $dir "SOURCE.txt") -Value $sourceText -Encoding utf8
+            Set-Content -Path (Join-Path $dir "UNSIGNED-ALPHA.txt") -Value $unsignedText -Encoding utf8
+          }
+
+      - name: Package release artifacts
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/GuardService/* -DestinationPath dist/SKARMRO-GuardService-v0.1.0-alpha-win-x64.zip -Force
+          Compress-Archive -Path dist/ParentApp/* -DestinationPath dist/SKARMRO-ParentApp-v0.1.0-alpha-win-x64.zip -Force
+          Compress-Archive -Path dist/JuniorLauncher/* -DestinationPath dist/SKARMRO-JuniorLauncher-v0.1.0-alpha-win-x64.zip -Force
+          Compress-Archive -Path src/Skarmro.BrowserGuard/* -DestinationPath dist/SKARMRO-BrowserGuard-v0.8.2.zip -Force
+
+          $assets = Get-ChildItem dist -Filter *.zip | Sort-Object Name
+          $lines = foreach ($asset in $assets) {
+            $hash = (Get-FileHash $asset.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($asset.Name)"
+          }
+          Set-Content -Path dist/SHA256SUMS.txt -Value $lines -Encoding ascii
+
+      - name: Upload reproducible workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKARMRO-v0.1.0-alpha-release-candidate
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Create public GitHub prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Release $env:RELEASE_TAG already exists; refusing to overwrite an immutable alpha release."
+          }
+
+          gh release create $env:RELEASE_TAG `
+            "dist/SKARMRO-GuardService-v0.1.0-alpha-win-x64.zip" `
+            "dist/SKARMRO-ParentApp-v0.1.0-alpha-win-x64.zip" `
+            "dist/SKARMRO-JuniorLauncher-v0.1.0-alpha-win-x64.zip" `
+            "dist/SKARMRO-BrowserGuard-v0.8.2.zip" `
+            "dist/SHA256SUMS.txt" `
+            --repo $env:GITHUB_REPOSITORY `
+            --target $env:GITHUB_SHA `
+            --title "SKÄRMRO v0.1.0-alpha" `
+            --notes-file "docs/RELEASE-v0.1.0-alpha.md" `
+            --prerelease
