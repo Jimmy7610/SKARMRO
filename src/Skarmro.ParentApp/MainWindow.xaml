@@ -25,11 +25,11 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Button Content="Översikt" HorizontalContentAlignment="Left" Background="#182432" Foreground="White" Margin="0,0,0,8"/>
-                    <Button Content="Webbskydd" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
-                    <Button Content="Rutiner" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
-                    <Button Content="Appar" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
-                    <Button Content="Protection Health" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8"/>
+                    <Button x:Name="OverviewNavButton" Content="Översikt" HorizontalContentAlignment="Left" Background="#182432" Foreground="White" Margin="0,0,0,8" Click="ShowOverview_Click"/>
+                    <Button Content="Webbskydd" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8" IsEnabled="False"/>
+                    <Button Content="Rutiner" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8" IsEnabled="False"/>
+                    <Button x:Name="AppsNavButton" Content="Appar" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8" Click="ShowApps_Click"/>
+                    <Button Content="Protection Health" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" IsEnabled="False"/>
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -54,14 +54,15 @@
                 <Grid>
                     <StackPanel>
                         <TextBlock Text="SKÄRMRO · BOUNDARY, NOT SURVEILLANCE" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
-                        <TextBlock Text="Översikt" FontSize="30" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock x:Name="PageTitleText" Text="Översikt" FontSize="30" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
                     <Button Grid.Column="1" x:Name="SaveNativePolicyButton" Content="Spara native-policy" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveNativePolicy_Click"/>
                 </Grid>
             </Border>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="32">
+                <Grid Margin="32">
+                    <StackPanel x:Name="OverviewPanel">
                     <Border Background="#111B25" BorderBrush="#253342" BorderThickness="1" CornerRadius="22" Padding="30">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -126,7 +127,58 @@
                             </StackPanel>
                         </Border>
                     </Grid>
-                </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel x:Name="AppsPanel" Visibility="Collapsed">
+                        <Border Background="#111B25" BorderBrush="#253342" BorderThickness="1" CornerRadius="22" Padding="26" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="APPREGLER" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                                <TextBlock Text="Bestäm vilka program barnet får använda." FontWeight="Bold" FontSize="30" Margin="0,6,0,8"/>
+                                <TextBlock Text="Blockerade appar stoppas av Guard Service för SkarmroChild. Tillåt-listan sparas i policyn och används som tydlig baseline utan att riskera att viktiga Windows-processer blockeras." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="TILLÅTNA APPAR" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Tillåt-lista" FontSize="22" FontWeight="Bold" Margin="0,4,0,10"/>
+                                    <ListBox x:Name="AllowedAppsList" MinHeight="260" Margin="0,0,0,12"/>
+                                    <DockPanel>
+                                        <TextBox x:Name="AllowedAppInput" MinWidth="220" Margin="0,0,8,0" ToolTip="Exempel: calc.exe"/>
+                                        <Button Content="Lägg till" Click="AddAllowedApp_Click"/>
+                                    </DockPanel>
+                                    <Button Content="Ta bort vald" Margin="0,10,0,0" Click="RemoveAllowedApp_Click"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="BLOCKERADE APPAR" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Guard blockerar dessa" FontSize="22" FontWeight="Bold" Margin="0,4,0,10"/>
+                                    <ListBox x:Name="BlockedAppsList" MinHeight="260" Margin="0,0,0,12"/>
+                                    <DockPanel>
+                                        <TextBox x:Name="BlockedAppInput" MinWidth="220" Margin="0,0,8,0" ToolTip="Exempel: msedge.exe"/>
+                                        <Button Content="Blockera" Click="AddBlockedApp_Click"/>
+                                    </DockPanel>
+                                    <Button Content="Ta bort vald" Margin="0,10,0,0" Click="RemoveBlockedApp_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Background="#101923" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="18" Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock x:Name="AppsPolicyStatusText" Text="Läser aktuell policy..." FontWeight="SemiBold"/>
+                                <TextBlock Text="Ändringarna börjar gälla när du klickar Spara native-policy. Guard Service läser policyfilen vid nya processstarter." Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
             </ScrollViewer>
         </Grid>
     </Grid>
