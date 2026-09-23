@@ -1,0 +1,132 @@
+<Window x:Class="Skarmro.ParentApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SKÄRMRO Parent App"
+        Width="1280" Height="820"
+        MinWidth="1050" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BgBrush}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#0C1219" BorderBrush="#1D2834" BorderThickness="0,0,1,0">
+            <DockPanel Margin="22">
+                <StackPanel DockPanel.Dock="Top">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,30">
+                        <Border Width="44" Height="44" CornerRadius="14" Background="#EAF3FF">
+                            <TextBlock Text="S" Foreground="#0B1118" FontWeight="Bold" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,2,0,0">
+                            <TextBlock Text="SKÄRMRO" FontWeight="Bold" FontSize="15"/>
+                            <TextBlock Text="Parent App" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Content="Översikt" HorizontalContentAlignment="Left" Background="#182432" Foreground="White" Margin="0,0,0,8"/>
+                    <Button Content="Webbskydd" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
+                    <Button Content="Rutiner" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
+                    <Button Content="Appar" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8" Margin="0,0,0,8"/>
+                    <Button Content="Protection Health" HorizontalContentAlignment="Left" Background="Transparent" Foreground="#ADBAC8"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                    <Border Background="#101923" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="●  SkarmroChild" Foreground="{StaticResource GoodBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text="Windows-barnkonto" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="16,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Native preview · Morning Build" Foreground="#6F8194" FontSize="10" Margin="2,12,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" BorderBrush="#18222E" BorderThickness="0,0,0,1" Padding="32,24">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Text="SKÄRMRO · BOUNDARY, NOT SURVEILLANCE" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                        <TextBlock Text="Översikt" FontSize="30" FontWeight="Bold" Margin="0,5,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Spara ändringar" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32">
+                    <Border Background="#111B25" BorderBrush="#253342" BorderThickness="1" CornerRadius="22" Padding="30">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="190"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="SKYDDET ÄR AKTIVT" Foreground="{StaticResource GoodBrush}" FontWeight="Bold" FontSize="12"/>
+                                <TextBlock Text="En lugnare Windows-dator för barn." FontWeight="Bold" FontSize="34" Margin="0,8,0,8"/>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="760" Foreground="{StaticResource MutedBrush}" FontSize="14"
+                                           Text="SKÄRMRO kombinerar automatiskt webbskydd, tydliga rutiner och Windows-regler utan att läsa privata meddelanden eller spela in skärmen."/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="150" Height="150" CornerRadius="75" BorderBrush="#385166" BorderThickness="1" Background="#12202B" HorizontalAlignment="Right">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="✓" FontSize="48" Foreground="{StaticResource GoodBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Skydd aktivt" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <UniformGrid Columns="4" Margin="0,16,0,16">
+                        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="18" Margin="0,0,10,0">
+                            <StackPanel><TextBlock Text="Auto Protect" Foreground="{StaticResource MutedBrush}" FontSize="11"/><TextBlock Text="På" FontSize="23" FontWeight="Bold" Margin="0,8,0,3"/><TextBlock Text="Automatisk filtrering" Foreground="{StaticResource MutedBrush}" FontSize="11"/></StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="18" Margin="0,0,10,0">
+                            <StackPanel><TextBlock Text="YouTube Shorts" Foreground="{StaticResource MutedBrush}" FontSize="11"/><TextBlock Text="Blockeras" FontSize="23" FontWeight="Bold" Margin="0,8,0,3"/><TextBlock Text="Döljs och stoppas" Foreground="{StaticResource MutedBrush}" FontSize="11"/></StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="18" Margin="0,0,10,0">
+                            <StackPanel><TextBlock Text="Aktiv rutin" Foreground="{StaticResource MutedBrush}" FontSize="11"/><TextBlock x:Name="ActiveRoutineText" Text="Ingen" FontSize="23" FontWeight="Bold" Margin="0,8,0,3"/><TextBlock Text="Normal skyddsnivå" Foreground="{StaticResource MutedBrush}" FontSize="11"/></StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="18">
+                            <StackPanel><TextBlock Text="Native Guard" Foreground="{StaticResource MutedBrush}" FontSize="11"/><TextBlock Text="Väntar" Foreground="{StaticResource WarnBrush}" FontSize="23" FontWeight="Bold" Margin="0,8,0,3"/><TextBlock Text="Signering krävs på WILMA" Foreground="{StaticResource MutedBrush}" FontSize="11"/></StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="PROTECTION HEALTH" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                                <TextBlock Text="Skyddsstatus" FontSize="21" FontWeight="Bold" Margin="0,4,0,14"/>
+                                <TextBlock Text="✓  Browser Guard aktiv" Margin="0,5"/>
+                                <TextBlock Text="✓  Auto Protect aktiv" Margin="0,5"/>
+                                <TextBlock Text="✓  Shorts-skydd aktivt" Margin="0,5"/>
+                                <TextBlock Text="!  Native Guard väntar på signerad build" Foreground="#F3C46B" Margin="0,5"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="8,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="SNABBKONTROLLER" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
+                                <TextBlock Text="Nu direkt" FontSize="21" FontWeight="Bold" Margin="0,4,0,14"/>
+                                <WrapPanel>
+                                    <Button Content="Pausa YouTube 30 min"/>
+                                    <Button Content="Ge 15 min extra tid"/>
+                                </WrapPanel>
+                                <TextBlock Text="Native app-kontroller kopplas till Guard Service via IPC i nästa signerade runtime." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
