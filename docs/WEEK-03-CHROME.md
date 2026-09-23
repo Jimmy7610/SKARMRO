@@ -102,3 +102,21 @@ Custom blocked words continue to work even if Auto Protect is disabled.
 ### Product limitation
 
 Auto Protect is fully automatic in operation, but keyword/text classification cannot guarantee perfect detection of all unsuitable content. False positives/negatives must be measured during pilot and improved with fixtures, allowlists and additional classifiers.
+
+
+### WILMA manual validation — Auto Protect v0.4.2
+
+Verified on Chrome 153:
+
+- automatic gambling search blocking works
+- blocked-search notice renders correctly
+- category is reported as `gambling`
+- safe navigation back to normal YouTube remains available
+- Auto Protect and Shorts protection can coexist
+
+Status: **Auto Protect search blocking PASS**.
+
+Next:
+- automatic filtering of individual recommended videos/cards on otherwise safe pages
+- false-positive checks with safe queries
+- blocked-channel interaction with Auto Protect
