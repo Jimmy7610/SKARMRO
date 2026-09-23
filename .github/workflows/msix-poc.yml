@@ -1,0 +1,49 @@
+name: MSIX POC
+
+on:
+  push:
+    branches:
+      - "feature/msix-store-poc"
+    paths:
+      - "packaging/msix/**"
+      - "scripts/msix/**"
+      - "src/Skarmro.GuardService/**"
+      - "src/Skarmro.ParentApp/**"
+      - "src/Skarmro.JuniorLauncher/**"
+      - ".github/workflows/msix-poc.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Parse MSIX PowerShell scripts
+        shell: powershell
+        run: |
+          Get-ChildItem scripts\msix -Filter *.ps1 | ForEach-Object {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$($_.Extent.Text): $($_.Message)" }
+              exit 1
+            }
+          }
+
+      - name: Build unsigned MSIX
+        shell: powershell
+        run: .\scripts\msix\01-build-dev-msix.ps1
+
+      - name: Upload unsigned POC package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKARMRO-MSIX-POC-unsigned
+          path: artifacts/msix-dev/SKARMRO-0.1.0-dev-x64.msix
+          if-no-files-found: error
