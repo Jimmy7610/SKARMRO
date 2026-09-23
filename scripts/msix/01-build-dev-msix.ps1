@@ -20,7 +20,7 @@ $projects = @(
 
 foreach ($project in $projects) {
     $target = Join-Path $layout $project.Name
-    dotnet publish (Join-Path $repoRoot $project.Path) -c Release -r win-x64 --self-contained false -o $target
+    dotnet publish (Join-Path $repoRoot $project.Path) -c Release -r win-x64 --self-contained false -p:UseSharedCompilation=false -p:BuildInParallel=false -o $target
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $($project.Name)." }
 }
 
