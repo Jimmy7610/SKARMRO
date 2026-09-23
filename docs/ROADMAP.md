@@ -123,3 +123,10 @@
 - WILMA configuration script — BUILT
 - WILMA native health diagnostics — BUILT
 - Native policy + Protection Health integration — BUILD PASS
+
+
+### WILMA native enforcement validation
+- Native App Blocking on WILMA — PASS
+- Child SID targeting — PASS
+- Blocked process terminated — PASS
+- Legacy enforcement event persisted — PASS
