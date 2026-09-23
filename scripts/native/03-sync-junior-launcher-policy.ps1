@@ -15,12 +15,12 @@ $blocked = @{}
 
 function Convert-ToLauncherApp([string]$processName) {
     switch ($processName.ToLowerInvariant()) {
-        "calc.exe" { return [ordered]@{ processName=$processName; displayName="Miniräknare"; icon="＋"; subtitle=$null } }
-        "mspaint.exe" { return [ordered]@{ processName=$processName; displayName="Rita"; icon="✎"; subtitle=$null } }
-        "chrome.exe" { return [ordered]@{ processName=$processName; displayName="Internet"; icon="◎"; subtitle="SKÄRMRO Browser Guard" } }
+        "calc.exe" { return [ordered]@{ processName=$processName; displayName="Calculator"; icon="+"; subtitle=$null } }
+        "mspaint.exe" { return [ordered]@{ processName=$processName; displayName="Paint"; icon="P"; subtitle=$null } }
+        "chrome.exe" { return [ordered]@{ processName=$processName; displayName="Internet"; icon="O"; subtitle="SKARMRO Browser Guard" } }
         default {
             $name = [IO.Path]::GetFileNameWithoutExtension($processName)
-            return [ordered]@{ processName=$processName; displayName=$name; icon="▣"; subtitle=$null }
+            return [ordered]@{ processName=$processName; displayName=$name; icon="[]"; subtitle=$null }
         }
     }
 }
@@ -40,7 +40,7 @@ $projection = [ordered]@{
 
 New-Item -ItemType Directory -Path $publicRoot -Force | Out-Null
 
-# Dedicated public projection: SYSTEM/Admins can modify; standard Users can only read/execute.
+# SYSTEM/Admins can modify; standard Users can only read/execute.
 & icacls $publicRoot /inheritance:r | Out-Null
 & icacls $publicRoot /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" "*S-1-5-32-545:(OI)(CI)RX" | Out-Null
 
