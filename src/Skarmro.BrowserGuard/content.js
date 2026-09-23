@@ -10,6 +10,13 @@
   };
 
   let policy = { ...defaultPolicy };
+  let runtimeState = null;
+
+  const effectivePolicy = () => ({
+    ...policy,
+    autoProtect: runtimeState?.overrides?.forceAutoProtect ? true : policy.autoProtect,
+    blockShorts: runtimeState?.overrides?.forceBlockShorts ? true : policy.blockShorts
+  });
 
   const recordFiltered = (category) => {
     try {
@@ -37,7 +44,7 @@
   const syncDocumentFlags = () => {
     if (!document.documentElement) return;
     document.documentElement.dataset.skarmroBlockShorts =
-      policy.blockShorts !== false ? "true" : "false";
+      effectivePolicy().blockShorts !== false ? "true" : "false";
   };
 
   const showRoutinePauseNotice = () => {
@@ -65,9 +72,27 @@
 
     const body = document.createElement("p");
     body.textContent = routineName + " är aktiv just nu. YouTube blir tillgängligt igen när rutinen är slut.";
-    body.style.cssText = "color:#b7c2cf;font-size:16px;line-height:1.55;margin:0";
+    body.style.cssText = "color:#b7c2cf;font-size:16px;line-height:1.55;margin:0 0 18px";
 
-    panel.append(title, body);
+    const requestButton = document.createElement("button");
+    requestButton.textContent = "Be om 15 min extra tid";
+    requestButton.style.cssText = [
+      "border:0","border-radius:12px","padding:12px 18px","font-weight:700",
+      "cursor:pointer","background:#eaf3ff","color:#0b1118"
+    ].join(";");
+    requestButton.addEventListener("click", () => {
+      requestButton.disabled = true;
+      requestButton.textContent = "Förfrågan skickad";
+      chrome.runtime.sendMessage({
+        type:"skarmro:request-access",
+        minutes:15
+      }).catch(() => {
+        requestButton.disabled = false;
+        requestButton.textContent = "Försök igen";
+      });
+    });
+
+    panel.append(title, body, requestButton);
     notice.append(panel);
     document.documentElement.append(notice);
     return true;
