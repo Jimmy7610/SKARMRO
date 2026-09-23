@@ -111,3 +111,15 @@
 - Temporary Access + Auto Restore — PASS
 - Parent cancel override — PASS
 - 1-minute test override — PASS
+
+
+### Native integration update
+- Native policy contract v1 — BUILT
+- Native policy validation — PASS
+- Guard Health policy state — BUILT
+- Native Policy Receipts — BUILT
+- Parent App native policy writer — BUILT
+- Parent App native health reader — BUILT
+- WILMA configuration script — BUILT
+- WILMA native health diagnostics — BUILT
+- Native policy + Protection Health integration — BUILD PASS
