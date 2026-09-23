@@ -1,4 +1,4 @@
-using System.Security.Principal;
+using System.Management;
 using System.Text.Json;
 
 namespace Skarmro.ParentApp;
@@ -24,14 +24,14 @@ public static class NativePolicyStore
 
     public static NativeAppPolicy CreateBaseline(string childAccountName)
     {
-        var account = new NTAccount(Environment.MachineName, childAccountName);
-        var sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
+        var sid = FindLocalUserSid(childAccountName)
+            ?? throw new InvalidOperationException($"Could not resolve SID for local user '{childAccountName}'.");
 
         return new NativeAppPolicy
         {
             UpdatedAtUtc = DateTimeOffset.UtcNow.ToString("O"),
             Enabled = true,
-            ChildSid = sid.Value,
+            ChildSid = sid,
             BlockedProcessNames =
             [
                 "powershell.exe",
@@ -64,5 +64,24 @@ public static class NativePolicyStore
         var temp = PolicyPath + ".tmp";
         File.WriteAllText(temp, json);
         File.Move(temp, PolicyPath, true);
+    }
+
+    private static string? FindLocalUserSid(string accountName)
+    {
+        var escaped = accountName.Replace("'", "''", StringComparison.Ordinal);
+        using var searcher = new ManagementObjectSearcher(
+            $"SELECT SID, Name, LocalAccount FROM Win32_UserAccount WHERE Name = '{escaped}' AND LocalAccount = TRUE");
+
+        foreach (ManagementObject user in searcher.Get())
+        {
+            using (user)
+            {
+                var sid = user["SID"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(sid))
+                    return sid;
+            }
+        }
+
+        return null;
     }
 }
