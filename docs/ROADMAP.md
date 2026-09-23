@@ -52,13 +52,20 @@
 - Signing pipeline added
 - Do not disable Smart App Control on the primary Home validation machine
 
-## Week 3 — Managed Chrome — IN PROGRESS
+## Week 3 — Managed Chrome — BROWSER MVP PASS / DISTRIBUTION PENDING
 - Chrome installation/detection
 - Chrome Windows policy baseline
 - Browser Guard Manifest V3 prototype — BUILT
 - Shorts URL classification — BUILT
 - Shorts link/shelf hiding prototype — BUILT
 - Browser Guard CI — PASS
+- Parent App dashboard — BUILT
+- Auto Protect Swedish + English — PASS
+- Search blocking — PASS
+- Recommendation filtering — BUILT
+- Anonymous session counters — BUILT
+- Protection Health heartbeat — BUILT
+- Policy Receipts — BUILT
 - Chrome Web Store distribution path
 - Force-install / anti-disable validation
 - Block unsupported alternate browsers for child account
@@ -70,13 +77,17 @@
 - Channel shadow-filter prototype
 - Automated regression test concept
 
-## Week 5 — Routines
-- School
-- Homework
-- Dinner
-- Free Time
-- Bedtime
-- Pause Now
+## Week 5 — Routines — BROWSER LAYER BUILT
+- School — BUILT
+- Homework — BUILT
+- Dinner — BUILT
+- Free Time — BUILT
+- Bedtime — BUILT
+- Pause Now — BUILT for YouTube
+- Temporary access — BUILT
+- Auto restore — BUILT
+- Routine engine CI tests — PASS
+- Windows/app-level routine enforcement — pending signed Native Guard
 
 ## Week 6 — Anti-bypass
 - Task Manager
