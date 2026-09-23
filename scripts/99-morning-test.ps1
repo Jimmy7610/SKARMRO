@@ -20,10 +20,12 @@ Write-Host ("Browser Guard version: " + $manifest.version) -ForegroundColor Gree
 Write-Host "Expected morning build: 0.8.0" -ForegroundColor Green
 
 $chromeCandidates = @(
-    "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
-    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
-    "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
-) | Where-Object { $_ -and (Test-Path $_) }
+    @(
+        "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+        "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+        "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+    ) | Where-Object { $_ -and (Test-Path $_) }
+)
 
 Write-Host ""
 Write-Host "Next:" -ForegroundColor Cyan
