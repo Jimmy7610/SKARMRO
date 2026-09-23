@@ -22,6 +22,9 @@ public sealed class GuardWorker : BackgroundService
     private static readonly string ProcessGuardEventsPath =
         Path.Combine(ProgramDataRoot, "process-guard-events.jsonl");
 
+    private static readonly string NativeReceiptsPath =
+        Path.Combine(ProgramDataRoot, "native-policy-receipts.jsonl");
+
     public GuardWorker(ILogger<GuardWorker> logger)
     {
         _logger = logger;
@@ -39,6 +42,9 @@ public sealed class GuardWorker : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                var policy = LoadProcessGuardPolicy(out var policyReason);
+                var validation = ProcessGuardPolicyValidator.Validate(policy);
+
                 var status = new
                 {
                     service = "SkarmroGuardService",
@@ -47,12 +53,19 @@ public sealed class GuardWorker : BackgroundService
                     identity = System.Security.Principal.WindowsIdentity.GetCurrent().Name,
                     pid = Environment.ProcessId,
                     timestampUtc = DateTimeOffset.UtcNow,
-                    version = "gate0-week2-process-guard",
+                    version = "gate0-native-health-v1",
                     processGuard = new
                     {
                         watcherActive = _processWatcher is not null,
                         policyPath = ProcessGuardPolicyPath,
-                        policyPresent = File.Exists(ProcessGuardPolicyPath)
+                        policyPresent = File.Exists(ProcessGuardPolicyPath),
+                        policyValid = validation.IsValid,
+                        policyReason = validation.IsValid ? validation.Reason : policyReason ?? validation.Reason,
+                        policyVersion = policy?.PolicyVersion,
+                        policyUpdatedAtUtc = policy?.UpdatedAtUtc,
+                        enforcementEnabled = validation.IsValid && policy?.Enabled == true,
+                        blockedProcessCount = policy?.BlockedProcessNames?.Length ?? 0,
+                        blockedHashCount = policy?.BlockedSha256?.Length ?? 0
                     }
                 };
 
@@ -127,7 +140,7 @@ public sealed class GuardWorker : BackgroundService
             }
 
             var processId = Convert.ToInt32(processIdValue);
-            var policy = LoadProcessGuardPolicy();
+            var policy = LoadProcessGuardPolicy(out _);
 
             var ownerSid = TryGetProcessOwnerSid(processId);
             var executablePath = TryGetExecutablePath(processId);
@@ -167,6 +180,12 @@ public sealed class GuardWorker : BackgroundService
                 action = killed ? "terminated" : "termination_failed",
                 error
             });
+
+            WriteNativeReceipt(
+                killed ? "app-blocked" : "app-block-failed",
+                killed
+                    ? $"Blocked {processName} for protected child account."
+                    : $"Failed to block {processName}: {error ?? "unknown error"}");
         }
         catch (Exception ex)
         {
@@ -174,22 +193,28 @@ public sealed class GuardWorker : BackgroundService
         }
     }
 
-    private static ProcessGuardPolicy? LoadProcessGuardPolicy()
+    private static ProcessGuardPolicy? LoadProcessGuardPolicy(out string? reason)
     {
         try
         {
             if (!File.Exists(ProcessGuardPolicyPath))
             {
+                reason = "PolicyFileMissing";
                 return null;
             }
 
             var json = File.ReadAllText(ProcessGuardPolicyPath);
-            return JsonSerializer.Deserialize<ProcessGuardPolicy>(
+            var policy = JsonSerializer.Deserialize<ProcessGuardPolicy>(
                 json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            var validation = ProcessGuardPolicyValidator.Validate(policy);
+            reason = validation.Reason;
+            return validation.IsValid ? policy : null;
         }
-        catch
+        catch (Exception ex)
         {
+            reason = "PolicyReadError: " + ex.GetType().Name;
             return null;
         }
     }
@@ -258,6 +283,27 @@ public sealed class GuardWorker : BackgroundService
         catch
         {
             return null;
+        }
+    }
+
+    private static void WriteNativeReceipt(string kind, string detail)
+    {
+        try
+        {
+            var receipt = new
+            {
+                timestampUtc = DateTimeOffset.UtcNow,
+                kind,
+                detail
+            };
+
+            File.AppendAllText(
+                NativeReceiptsPath,
+                JsonSerializer.Serialize(receipt) + Environment.NewLine);
+        }
+        catch
+        {
+            // Receipts must never break enforcement.
         }
     }
 
