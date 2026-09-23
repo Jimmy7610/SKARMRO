@@ -4,6 +4,8 @@
 
   const defaultPolicy = {
     blockShorts: true,
+    autoProtect: true,
+    customBlockedWords: [],
     blockedChannels: []
   };
 
@@ -21,6 +23,48 @@
     if (decision.action === "block-shorts" || decision.action === "hide-channel") {
       location.replace("https://www.youtube.com/");
       return true;
+    }
+
+    return false;
+  };
+
+  const hideAutomaticContent = (root = document) => {
+    const cardSelectors = [
+      "ytd-video-renderer",
+      "ytd-rich-item-renderer",
+      "ytd-grid-video-renderer",
+      "ytd-compact-video-renderer",
+      "yt-lockup-view-model"
+    ];
+
+    for (const selector of cardSelectors) {
+      for (const card of root.querySelectorAll?.(selector) ?? []) {
+        if (card.dataset.skarmroHidden) continue;
+
+        const text = (card.textContent || "").trim();
+        const decision = rules.classifyText(text, policy);
+
+        if (decision.action === "hide-content") {
+          card.style.setProperty("display", "none", "important");
+          card.dataset.skarmroHidden = decision.reason;
+          card.dataset.skarmroCategory = decision.category || "unknown";
+        }
+      }
+    }
+
+    if (location.pathname === "/watch") {
+      const title =
+        document.querySelector("ytd-watch-metadata h1")?.textContent ||
+        document.querySelector("h1.ytd-watch-metadata")?.textContent ||
+        "";
+
+      if (title.trim()) {
+        const decision = rules.classifyText(title, policy);
+        if (decision.action === "hide-content") {
+          location.replace("https://www.youtube.com/");
+          return true;
+        }
+      }
     }
 
     return false;
@@ -65,6 +109,7 @@
 
   const scan = () => {
     if (redirectIfBlockedNavigation()) return;
+    if (hideAutomaticContent()) return;
     hideBlockedContent();
   };
 
