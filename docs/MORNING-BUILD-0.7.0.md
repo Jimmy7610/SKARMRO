@@ -1,4 +1,4 @@
-# SKÄRMRO Morning Build — v0.7.0
+# SKÄRMRO Morning Build — v0.8.0
 
 ## Testable now on WILMA
 
@@ -49,6 +49,8 @@ The options page is now the SKÄRMRO Parent App.
 - Clear override immediately
 - automatic restore at expiry
 - Policy Receipt generated
+- child can request 15 minutes extra time from the blocked YouTube screen
+- parent can approve or deny requests in Parent App
 
 ### Privacy model
 Browser Guard does not store:
@@ -88,3 +90,12 @@ Do not disable Smart App Control to hide this limitation.
 8. Enable Dinner or Bedtime around the current time and verify YouTube pauses
 9. Try “Give 15 min extra time” and verify temporary access
 10. Open Protection Health and inspect Policy Receipts
+
+
+## Native preview added
+
+Source projects now exist for:
+- `Skarmro.ParentApp` — native WPF Parent App
+- `Skarmro.JuniorLauncher` — fullscreen child launcher preview
+
+These are intentionally not presented as production-secure until trusted signing and Native Guard authorization are available.
