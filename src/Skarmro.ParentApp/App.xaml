@@ -10,6 +10,7 @@
         <SolidColorBrush x:Key="TextBrush" Color="#F4F7FB"/>
         <SolidColorBrush x:Key="MutedBrush" Color="#9FB0C3"/>
         <SolidColorBrush x:Key="GoodBrush" Color="#66D29C"/>
+        <SolidColorBrush x:Key="WarnBrush" Color="#F3C46B"/>
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
