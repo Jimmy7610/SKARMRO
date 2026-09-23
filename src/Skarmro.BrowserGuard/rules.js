@@ -1,4 +1,30 @@
 (() => {
+  const normalizeText = (value) =>
+    String(value ?? "")
+      .normalize("NFKC")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const tokenize = (value) =>
+    normalizeText(value).match(/[\p{L}\p{N}]+/gu) ?? [];
+
+  const containsTerm = (text, term) => {
+    const normalizedTerm = normalizeText(term);
+    if (!normalizedTerm) return false;
+
+    const haystackTokens = tokenize(text);
+    if (haystackTokens.length === 0) return false;
+
+    if (!normalizedTerm.includes(" ")) {
+      return haystackTokens.includes(normalizedTerm);
+    }
+
+    const padded = " " + haystackTokens.join(" ") + " ";
+    return padded.includes(" " + normalizedTerm + " ");
+  };
+
   const api = {
     isShortsPath(pathname) {
       if (typeof pathname !== "string") return false;
@@ -80,6 +106,52 @@
       }
 
       return { ok: false, reason: "not-channel" };
+    },
+
+    classifyText(value, policy = {}) {
+      const text = String(value ?? "");
+      if (!text.trim()) {
+        return { action: "allow", reason: "empty-text" };
+      }
+
+      const customWords = Array.isArray(policy.customBlockedWords)
+        ? policy.customBlockedWords
+        : [];
+
+      for (const term of customWords) {
+        if (containsTerm(text, term)) {
+          return {
+            action: "hide-content",
+            reason: "custom-word",
+            category: "custom",
+            matchedTerm: normalizeText(term)
+          };
+        }
+      }
+
+      if (policy.autoProtect === false) {
+        return { action: "allow", reason: "auto-protect-disabled" };
+      }
+
+      const lexicon = globalThis.SkarmroAutoProtectLexicon ?? {};
+
+      for (const [category, config] of Object.entries(lexicon)) {
+        const enabledCategories = policy.autoCategories ?? {};
+        if (enabledCategories[category] === false) continue;
+
+        for (const term of config.terms ?? []) {
+          if (containsTerm(text, term)) {
+            return {
+              action: "hide-content",
+              reason: "auto-protect",
+              category,
+              matchedTerm: normalizeText(term)
+            };
+          }
+        }
+      }
+
+      return { action: "allow", reason: "no-text-match" };
     },
 
     classifyUrl(value, policy = {}) {
