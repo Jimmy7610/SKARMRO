@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SKÄRMRO Browser Guard",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "SKÄRMRO child-safe Chrome browser guard prototype.",
   "host_permissions": [
     "*://*.youtube.com/*",
