@@ -98,6 +98,21 @@ importScripts("routine-engine.js");
       return;
     }
 
+    if (message?.type === "skarmro:filtered") {
+      void (async () => {
+        const key = message.category || "unknown";
+        const stored = await chrome.storage.session.get("filterStats");
+        const stats = stored.filterStats && typeof stored.filterStats === "object"
+          ? { ...stored.filterStats }
+          : {};
+        stats.total = Number(stats.total || 0) + 1;
+        stats[key] = Number(stats[key] || 0) + 1;
+        await chrome.storage.session.set({ filterStats:stats });
+      })();
+      sendResponse({ ok:true });
+      return;
+    }
+
     if (message?.type === "skarmro:recalculate") {
       void recalculate();
       sendResponse({ ok:true });
