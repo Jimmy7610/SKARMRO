@@ -97,6 +97,14 @@
       parts.push(statusValue.autoProtect ? "Auto Protect: PÅ" : "Auto Protect: AV");
       parts.push(statusValue.blockShorts ? "Shorts: BLOCKERAS" : "Shorts: TILLÅTS");
 
+      if (statusValue.activeRoutine?.name) {
+        parts.push("Rutin: " + statusValue.activeRoutine.name);
+      }
+
+      if (statusValue.youtubePaused) {
+        parts.push("YouTube: PAUSAT");
+      }
+
       if (statusValue.queryDecision?.action === "hide-content") {
         parts.push("Aktuell sökning: BLOCKERAD");
       }
@@ -163,9 +171,19 @@
     if (existing >= 0) {
       policy.blockedChannels.splice(existing, 1);
       status.textContent = "Kanalen är nu tillåten.";
+      chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind:"channel-allowed",
+        detail:"En kanal tilläts manuellt av föräldern"
+      }).catch(() => {});
     } else {
       policy.blockedChannels.push(key);
       status.textContent = "Kanalen är nu blockerad.";
+      chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind:"channel-blocked",
+        detail:"En kanal blockerades manuellt av föräldern"
+      }).catch(() => {});
     }
 
     policy.blockedChannels = [...new Set(policy.blockedChannels)];
