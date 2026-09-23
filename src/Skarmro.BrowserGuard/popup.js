@@ -1,4 +1,5 @@
 (() => {
+  const protectionStatus = document.getElementById("protectionStatus");
   const channelName = document.getElementById("channelName");
   const toggleChannel = document.getElementById("toggleChannel");
   const status = document.getElementById("status");
@@ -34,6 +35,39 @@
   }
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function detectProtectionStatus() {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    if (!tab?.id || !tab.url?.includes("youtube.com")) {
+      protectionStatus.textContent = "Öppna YouTube för att kontrollera skyddet.";
+      return;
+    }
+
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        type: "skarmro:get-protection-status"
+      });
+
+      if (!response?.status) {
+        protectionStatus.textContent = "Skyddsstatus kunde inte läsas.";
+        return;
+      }
+
+      const statusValue = response.status;
+      const parts = [];
+      parts.push(statusValue.autoProtect ? "Auto Protect: PÅ" : "Auto Protect: AV");
+      parts.push(statusValue.blockShorts ? "Shorts: BLOCKERAS" : "Shorts: TILLÅTS");
+
+      if (statusValue.queryDecision?.action === "hide-content") {
+        parts.push("Aktuell sökning: BLOCKERAD");
+      }
+
+      protectionStatus.textContent = parts.join(" · ");
+    } catch {
+      protectionStatus.textContent = "Skyddet svarar inte på den här fliken. Ladda om YouTube.";
+    }
+  }
 
   async function detectCurrentChannel() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -113,7 +147,7 @@
     chrome.runtime.openOptionsPage();
   });
 
-  Promise.all([loadPolicy(), detectCurrentChannel()])
+  Promise.all([loadPolicy(), detectProtectionStatus(), detectCurrentChannel()])
     .then(render)
     .catch((error) => {
       status.textContent = "Kunde inte läsa sidan: " + error.message;
