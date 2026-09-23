@@ -1,105 +1,292 @@
 (() => {
   const rules = globalThis.SkarmroBrowserRules;
 
-  const autoProtect = document.getElementById("autoProtect");
-  const blockShorts = document.getElementById("blockShorts");
-  const customBlockedWords = document.getElementById("customBlockedWords");
-  const blockedChannels = document.getElementById("blockedChannels");
-  const save = document.getElementById("save");
-  const status = document.getElementById("status");
+  const DEFAULT_ROUTINES = [
+    { id:"school", name:"Skola", description:"Skärpt webbskydd", enabled:false, start:"08:00", end:"14:00", mode:"focus" },
+    { id:"homework", name:"Läxor", description:"Fokus utan Shorts", enabled:false, start:"16:00", end:"17:30", mode:"focus" },
+    { id:"dinner", name:"Middag", description:"Pausa YouTube", enabled:false, start:"18:00", end:"19:00", mode:"pause" },
+    { id:"free", name:"Fritid", description:"Normal skyddsnivå", enabled:true, start:"19:00", end:"20:00", mode:"free" },
+    { id:"bedtime", name:"Läggdags", description:"YouTube blockeras", enabled:true, start:"20:00", end:"07:00", mode:"pause" }
+  ];
 
   const defaultPolicy = {
-    blockShorts: true,
-    autoProtect: true,
-    customBlockedWords: [],
-    blockedChannels: []
+    autoProtect:true,
+    blockShorts:true,
+    autoCategories:{
+      adult:true, drugs:true, gambling:true, violence:true, selfHarm:true, profanity:true
+    },
+    customBlockedWords:[],
+    blockedChannels:[]
   };
+
+  const defaultParentConfig = {
+    routines: DEFAULT_ROUTINES,
+    allowedApps:["Calculator","Paint"],
+    blockedApps:["PowerShell","Registry Editor"]
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const qs = (selector) => document.querySelector(selector);
+  const qsa = (selector) => [...document.querySelectorAll(selector)];
+
+  const refs = {
+    autoProtect:$("autoProtect"),
+    blockShorts:$("blockShorts"),
+    customBlockedWords:$("customBlockedWords"),
+    blockedChannels:$("blockedChannels"),
+    allowedApps:$("allowedApps"),
+    blockedApps:$("blockedApps"),
+    routineEditor:$("routineEditor"),
+    saveAll:$("saveAll"),
+    saveState:$("saveState"),
+    toast:$("toast")
+  };
+
+  let state = {
+    policy: structuredClone(defaultPolicy),
+    parentConfig: structuredClone(defaultParentConfig),
+    runtimeState:null,
+    filterStats:{}
+  };
+
+  const viewTitles = {
+    overview:"Översikt",
+    protection:"Webbskydd",
+    routines:"Rutiner",
+    apps:"Appar",
+    health:"Protection Health"
+  };
+
+  function showToast(message) {
+    refs.toast.textContent = message;
+    refs.toast.classList.add("show");
+    window.setTimeout(() => refs.toast.classList.remove("show"), 1800);
+  }
+
+  function markDirty() {
+    refs.saveState.textContent = "Osparade ändringar";
+    refs.saveState.style.color = "#f3c46b";
+  }
+
+  function splitLines(value) {
+    return String(value || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
 
   function explainInvalidChannel(line, result) {
     if (result.reason === "video-url") {
-      return `"${line}" är en videolänk, inte en kanal. Klicka på kanalnamnet under videon och kopiera kanalens adress i stället.`;
+      return `"${line}" är en videolänk. Blockera kanalen direkt från SKÄRMRO-popupen på videon i stället.`;
+    }
+    return `"${line}" känns inte igen som en YouTube-kanal.`;
+  }
+
+  function normalizeChannels() {
+    const normalized = [];
+    for (const line of splitLines(refs.blockedChannels.value)) {
+      const result = rules?.normalizeBlockedChannelInput(line) ?? { ok:false, reason:"invalid" };
+      if (!result.ok) throw new Error(explainInvalidChannel(line, result));
+      normalized.push(result.key);
+    }
+    return [...new Set(normalized)];
+  }
+
+  function categoryMapFromUi() {
+    return {
+      adult:$("catAdult").checked,
+      drugs:$("catDrugs").checked,
+      gambling:$("catGambling").checked,
+      violence:$("catViolence").checked,
+      selfHarm:$("catSelfHarm").checked,
+      profanity:$("catProfanity").checked
+    };
+  }
+
+  function categoryMapToUi(categories) {
+    $("catAdult").checked = categories.adult !== false;
+    $("catDrugs").checked = categories.drugs !== false;
+    $("catGambling").checked = categories.gambling !== false;
+    $("catViolence").checked = categories.violence !== false;
+    $("catSelfHarm").checked = categories.selfHarm !== false;
+    $("catProfanity").checked = categories.profanity !== false;
+  }
+
+  function renderRoutines() {
+    refs.routineEditor.innerHTML = "";
+    for (const routine of state.parentConfig.routines) {
+      const row = document.createElement("div");
+      row.className = "routine-row";
+      row.dataset.routineId = routine.id;
+      row.innerHTML = `
+        <input class="routine-toggle" type="checkbox" ${routine.enabled ? "checked" : ""} aria-label="Aktivera ${routine.name}">
+        <div>
+          <div class="routine-name">${routine.name}</div>
+          <div class="routine-desc">${routine.description}</div>
+        </div>
+        <input class="routine-start" type="time" value="${routine.start}">
+        <input class="routine-end" type="time" value="${routine.end}">
+        <select class="routine-mode">
+          <option value="focus" ${routine.mode==="focus"?"selected":""}>Fokus</option>
+          <option value="free" ${routine.mode==="free"?"selected":""}>Normal</option>
+          <option value="pause" ${routine.mode==="pause"?"selected":""}>Pausa YouTube</option>
+        </select>
+      `;
+      refs.routineEditor.appendChild(row);
     }
 
-    return `"${line}" känns inte igen som en YouTube-kanal. Använd @handle eller en kanaladress.`;
+    refs.routineEditor.querySelectorAll("input,select").forEach((el) => {
+      el.addEventListener("change", markDirty);
+    });
+  }
+
+  function readRoutinesFromUi() {
+    return [...refs.routineEditor.querySelectorAll(".routine-row")].map((row) => {
+      const original = state.parentConfig.routines.find((r) => r.id === row.dataset.routineId);
+      return {
+        ...original,
+        enabled:row.querySelector(".routine-toggle").checked,
+        start:row.querySelector(".routine-start").value,
+        end:row.querySelector(".routine-end").value,
+        mode:row.querySelector(".routine-mode").value
+      };
+    });
+  }
+
+  function formatMode(mode) {
+    if (mode === "focus") return "Fokus";
+    if (mode === "pause") return "YouTube pausat";
+    return "Normal";
+  }
+
+  function renderOverview() {
+    $("overviewAutoProtect").textContent = state.policy.autoProtect !== false ? "På" : "Av";
+    $("overviewShorts").textContent = state.policy.blockShorts !== false ? "Blockeras" : "Tillåts";
+    $("healthAutoOverview").textContent = state.policy.autoProtect !== false ? "Aktiv" : "Av";
+    $("healthShortsOverview").textContent = state.policy.blockShorts !== false ? "Aktiv" : "Av";
+
+    const active = state.runtimeState?.activeRoutine;
+    $("overviewRoutine").textContent = active?.name || "Ingen";
+    $("overviewRoutineHint").textContent = active ? formatMode(active.mode) : "Normal skyddsnivå";
+
+    const total = Number(state.filterStats.total || 0);
+    $("overviewFiltered").textContent = String(total);
+
+    $("healthAutoText").textContent = state.policy.autoProtect !== false
+      ? "Aktivt och konfigurerat."
+      : "Avstängt av föräldern.";
+    $("healthAutoBadge").textContent = state.policy.autoProtect !== false ? "OK" : "AV";
+
+    const today = $("todayRoutines");
+    today.innerHTML = "";
+    const enabled = state.parentConfig.routines.filter((r) => r.enabled);
+    if (enabled.length === 0) {
+      today.innerHTML = '<div class="muted">Inga rutiner aktiverade.</div>';
+    } else {
+      for (const r of enabled) {
+        const div = document.createElement("div");
+        div.className = "routine-preview-row";
+        div.innerHTML = `<span><strong>${r.name}</strong><br><small>${formatMode(r.mode)}</small></span><span>${r.start}–${r.end}</span>`;
+        today.appendChild(div);
+      }
+    }
+  }
+
+  function hydrateForm() {
+    refs.autoProtect.checked = state.policy.autoProtect !== false;
+    refs.blockShorts.checked = state.policy.blockShorts !== false;
+    categoryMapToUi(state.policy.autoCategories || {});
+    refs.customBlockedWords.value = (state.policy.customBlockedWords || []).join("\n");
+    refs.blockedChannels.value = (state.policy.blockedChannels || [])
+      .map((value) => value.startsWith("handle:") ? "@" + value.slice(7) : value.startsWith("channel:") ? value.slice(8) : value)
+      .join("\n");
+    refs.allowedApps.value = (state.parentConfig.allowedApps || []).join("\n");
+    refs.blockedApps.value = (state.parentConfig.blockedApps || []).join("\n");
+    renderRoutines();
+    renderOverview();
   }
 
   async function load() {
-    const stored = await chrome.storage.local.get("browserPolicy");
-    const policy = {
-      ...defaultPolicy,
-      ...(stored.browserPolicy || {})
-    };
+    const local = await chrome.storage.local.get(["browserPolicy","parentConfig","runtimeState"]);
+    const session = await chrome.storage.session.get("filterStats");
 
-    autoProtect.checked = policy.autoProtect !== false;
-    blockShorts.checked = policy.blockShorts !== false;
-    customBlockedWords.value = (policy.customBlockedWords || []).join("\n");
-    blockedChannels.value = (policy.blockedChannels || [])
-      .map((value) => {
-        if (value.startsWith("handle:")) return "@" + value.slice("handle:".length);
-        if (value.startsWith("channel:")) return value.slice("channel:".length);
-        return value;
-      })
-      .join("\n");
+    state.policy = {
+      ...defaultPolicy,
+      ...(local.browserPolicy || {}),
+      autoCategories:{
+        ...defaultPolicy.autoCategories,
+        ...(local.browserPolicy?.autoCategories || {})
+      }
+    };
+    state.parentConfig = {
+      ...defaultParentConfig,
+      ...(local.parentConfig || {}),
+      routines:Array.isArray(local.parentConfig?.routines) ? local.parentConfig.routines : structuredClone(DEFAULT_ROUTINES)
+    };
+    state.runtimeState = local.runtimeState || null;
+    state.filterStats = session.filterStats || {};
+
+    $("appVersion").textContent = chrome.runtime.getManifest().version;
+    hydrateForm();
   }
 
-  async function persist() {
-    const rawLines = blockedChannels.value
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    const normalized = [];
-    const invalid = [];
-
-    for (const line of rawLines) {
-      const result = rules?.normalizeBlockedChannelInput(line) ?? {
-        ok: false,
-        reason: "invalid"
+  async function save() {
+    try {
+      const policy = {
+        autoProtect:refs.autoProtect.checked,
+        blockShorts:refs.blockShorts.checked,
+        autoCategories:categoryMapFromUi(),
+        customBlockedWords:[...new Set(splitLines(refs.customBlockedWords.value))],
+        blockedChannels:normalizeChannels()
+      };
+      const parentConfig = {
+        routines:readRoutinesFromUi(),
+        allowedApps:[...new Set(splitLines(refs.allowedApps.value))],
+        blockedApps:[...new Set(splitLines(refs.blockedApps.value))]
       };
 
-      if (result.ok) {
-        normalized.push(result.key);
-      } else {
-        invalid.push(explainInvalidChannel(line, result));
-      }
+      await chrome.storage.local.set({ browserPolicy:policy, parentConfig });
+      state.policy = policy;
+      state.parentConfig = parentConfig;
+      refs.saveState.textContent = "Alla ändringar sparade";
+      refs.saveState.style.color = "";
+      renderOverview();
+      showToast("SKÄRMRO-inställningarna är sparade");
+    } catch (error) {
+      refs.saveState.textContent = "Kunde inte spara";
+      refs.saveState.style.color = "#f08b8b";
+      showToast(error.message || "Kunde inte spara");
     }
-
-    if (invalid.length > 0) {
-      status.textContent = invalid[0];
-      status.dataset.state = "error";
-      return;
-    }
-
-    const unique = [...new Set(normalized)];
-    const customWords = customBlockedWords.value
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    await chrome.storage.local.set({
-      browserPolicy: {
-        autoProtect: autoProtect.checked,
-        blockShorts: blockShorts.checked,
-        customBlockedWords: [...new Set(customWords)],
-        blockedChannels: unique
-      }
-    });
-
-    status.dataset.state = "success";
-    status.textContent = "Sparat.";
-    window.setTimeout(() => {
-      status.textContent = "";
-      delete status.dataset.state;
-    }, 1800);
   }
 
-  save.addEventListener("click", () => {
-    persist().catch((error) => {
-      status.textContent = "Kunde inte spara: " + error.message;
-    });
+  function activateView(name) {
+    qsa(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
+    qsa(".view").forEach((panel) => panel.classList.toggle("active", panel.dataset.viewPanel === name));
+    $("viewTitle").textContent = viewTitles[name] || "SKÄRMRO";
+  }
+
+  qsa(".nav-item").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.view)));
+  qsa(".jump").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.jump)));
+  refs.saveAll.addEventListener("click", save);
+
+  document.addEventListener("change", (event) => {
+    if (event.target.closest(".main")) markDirty();
+  });
+  document.addEventListener("input", (event) => {
+    if (event.target.matches("textarea")) markDirty();
+  });
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local") return;
+    if (changes.runtimeState) {
+      state.runtimeState = changes.runtimeState.newValue || null;
+      renderOverview();
+    }
   });
 
   load().catch((error) => {
-    status.textContent = "Kunde inte läsa inställningar: " + error.message;
+    refs.saveState.textContent = "Kunde inte läsa inställningar";
+    refs.saveState.style.color = "#f08b8b";
+    showToast(error.message || "Startfel");
   });
 })();
