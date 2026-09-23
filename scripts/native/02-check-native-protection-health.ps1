@@ -46,6 +46,8 @@ if (Test-Path $statusPath) {
     $status = Get-Content $statusPath -Raw | ConvertFrom-Json
     $timestamp = [DateTimeOffset]::Parse($status.timestampUtc)
     $age = ([DateTimeOffset]::UtcNow - $timestamp).TotalSeconds
+    $hasModernHealth = $null -ne $status.processGuard.policyValid
+
     [pscustomobject]@{
         State = $status.state
         Version = $status.version
@@ -54,9 +56,9 @@ if (Test-Path $statusPath) {
         AgeSeconds = [Math]::Round($age, 1)
         WatcherActive = $status.processGuard.watcherActive
         PolicyPresent = $status.processGuard.policyPresent
-        PolicyValid = $status.processGuard.policyValid
-        PolicyReason = $status.processGuard.policyReason
-        EnforcementEnabled = $status.processGuard.enforcementEnabled
+        PolicyValid = if ($hasModernHealth) { $status.processGuard.policyValid } else { "N/A (legacy runtime)" }
+        PolicyReason = if ($hasModernHealth) { $status.processGuard.policyReason } else { "Upgrade requires trusted signing" }
+        EnforcementEnabled = if ($hasModernHealth) { $status.processGuard.enforcementEnabled } else { "Legacy runtime: test empirically" }
     } | Format-List
 } else {
     Write-Host "  No guard-status.json available." -ForegroundColor Yellow
