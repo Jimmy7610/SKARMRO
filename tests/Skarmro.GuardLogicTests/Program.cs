@@ -84,9 +84,6 @@ foreach (var test in tests)
 Console.WriteLine();
 Console.WriteLine($"{tests.Length - failed}/{tests.Length} tests passed.");
 
-return failed == 0 ? 0 : 1;
-
-
 Console.WriteLine();
 Console.WriteLine("SKARMRO policy validation tests");
 Console.WriteLine("===============================");
