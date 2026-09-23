@@ -85,3 +85,58 @@ Console.WriteLine();
 Console.WriteLine($"{tests.Length - failed}/{tests.Length} tests passed.");
 
 return failed == 0 ? 0 : 1;
+
+
+Console.WriteLine();
+Console.WriteLine("SKARMRO policy validation tests");
+Console.WriteLine("===============================");
+
+var validationTests = new (string Name, bool ExpectedValid, string ExpectedReason, ProcessGuardPolicy? Policy)[]
+{
+    ("valid policy", true, "Valid", new ProcessGuardPolicy
+    {
+        PolicyVersion = 1,
+        UpdatedAtUtc = DateTimeOffset.UtcNow.ToString("O"),
+        Enabled = true,
+        ChildSid = "S-1-5-21-3382208030-1057815629-3599114088-1002",
+        BlockedProcessNames = ["powershell.exe"],
+        BlockedSha256 = [blockedHash]
+    }),
+    ("missing policy", false, "PolicyMissing", null),
+    ("unsupported version", false, "UnsupportedPolicyVersion", new ProcessGuardPolicy
+    {
+        PolicyVersion = 99,
+        ChildSid = "S-1-5-21-3382208030-1057815629-3599114088-1002"
+    }),
+    ("invalid SID", false, "InvalidChildSid", new ProcessGuardPolicy
+    {
+        PolicyVersion = 1,
+        ChildSid = "not-a-sid"
+    }),
+    ("invalid hash", false, "InvalidBlockedSha256", new ProcessGuardPolicy
+    {
+        PolicyVersion = 1,
+        ChildSid = "S-1-5-21-3382208030-1057815629-3599114088-1002",
+        BlockedSha256 = ["ABC"]
+    })
+};
+
+var validationFailed = 0;
+foreach (var test in validationTests)
+{
+    var actual = ProcessGuardPolicyValidator.Validate(test.Policy);
+    var passed = actual.IsValid == test.ExpectedValid && actual.Reason == test.ExpectedReason;
+
+    Console.WriteLine(
+        $"{(passed ? "PASS" : "FAIL")}  {test.Name}  valid={actual.IsValid} reason={actual.Reason}");
+
+    if (!passed)
+    {
+        validationFailed++;
+    }
+}
+
+Console.WriteLine();
+Console.WriteLine($"{validationTests.Length - validationFailed}/{validationTests.Length} validation tests passed.");
+
+return failed == 0 && validationFailed == 0 ? 0 : 1;
