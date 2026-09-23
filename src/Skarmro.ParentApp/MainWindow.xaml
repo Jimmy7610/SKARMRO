@@ -56,7 +56,7 @@
                         <TextBlock Text="SKÄRMRO · BOUNDARY, NOT SURVEILLANCE" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
                         <TextBlock Text="Översikt" FontSize="30" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
-                    <Button Grid.Column="1" Content="Spara ändringar" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" x:Name="SaveNativePolicyButton" Content="Spara native-policy" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveNativePolicy_Click"/>
                 </Grid>
             </Border>
 
@@ -110,7 +110,8 @@
                                 <TextBlock Text="✓  Browser Guard aktiv" Margin="0,5"/>
                                 <TextBlock Text="✓  Auto Protect aktiv" Margin="0,5"/>
                                 <TextBlock Text="✓  Shorts-skydd aktivt" Margin="0,5"/>
-                                <TextBlock Text="!  Native Guard väntar på signerad build" Foreground="#F3C46B" Margin="0,5"/>
+                                <TextBlock x:Name="NativeGuardHealthText" Text="!  Native Guard kontrolleras..." Foreground="#F3C46B" Margin="0,5"/>
+                                <TextBlock x:Name="NativePolicyHealthText" Text="!  Native policy kontrolleras..." Foreground="#F3C46B" Margin="0,5"/>
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="8,0,0,0">
