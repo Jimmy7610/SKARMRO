@@ -1,13 +1,17 @@
 (() => {
   const rules = globalThis.SkarmroBrowserRules;
 
+  const autoProtect = document.getElementById("autoProtect");
   const blockShorts = document.getElementById("blockShorts");
+  const customBlockedWords = document.getElementById("customBlockedWords");
   const blockedChannels = document.getElementById("blockedChannels");
   const save = document.getElementById("save");
   const status = document.getElementById("status");
 
   const defaultPolicy = {
     blockShorts: true,
+    autoProtect: true,
+    customBlockedWords: [],
     blockedChannels: []
   };
 
@@ -26,7 +30,9 @@
       ...(stored.browserPolicy || {})
     };
 
+    autoProtect.checked = policy.autoProtect !== false;
     blockShorts.checked = policy.blockShorts !== false;
+    customBlockedWords.value = (policy.customBlockedWords || []).join("\n");
     blockedChannels.value = (policy.blockedChannels || [])
       .map((value) => {
         if (value.startsWith("handle:")) return "@" + value.slice("handle:".length);
@@ -65,10 +71,16 @@
     }
 
     const unique = [...new Set(normalized)];
+    const customWords = customBlockedWords.value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
 
     await chrome.storage.local.set({
       browserPolicy: {
+        autoProtect: autoProtect.checked,
         blockShorts: blockShorts.checked,
+        customBlockedWords: [...new Set(customWords)],
         blockedChannels: unique
       }
     });
