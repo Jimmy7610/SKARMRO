@@ -11,20 +11,26 @@
 
   let policy = { ...defaultPolicy };
 
-  const recordFiltered = async (category) => {
+  const recordFiltered = (category) => {
     try {
-      const key = category || "unknown";
-      const stored = await chrome.storage.session.get("filterStats");
-      const stats = stored.filterStats && typeof stored.filterStats === "object"
-        ? { ...stored.filterStats }
-        : {};
-
-      stats.total = Number(stats.total || 0) + 1;
-      stats[key] = Number(stats[key] || 0) + 1;
-
-      await chrome.storage.session.set({ filterStats: stats });
+      chrome.runtime.sendMessage({
+        type:"skarmro:filtered",
+        category:category || "unknown"
+      }).catch(() => {});
     } catch {
-      // Stats are optional and must never affect filtering.
+      // Statistics are optional and must never affect filtering.
+    }
+  };
+
+  const recordReceipt = (kind, detail) => {
+    try {
+      chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind,
+        detail
+      }).catch(() => {});
+    } catch {
+      // Receipts must never affect filtering.
     }
   };
 
@@ -177,7 +183,8 @@
 
     if (!document.documentElement.dataset.skarmroSearchCounted) {
       document.documentElement.dataset.skarmroSearchCounted = "true";
-      void recordFiltered(decision.category || "search");
+      recordFiltered(decision.category || "search");
+      recordReceipt("search-blocked", "Auto Protect blockerade en sökning i kategorin " + (decision.category || "okänd"));
     }
 
     return true;
@@ -203,7 +210,7 @@
           card.style.setProperty("display", "none", "important");
           card.dataset.skarmroHidden = decision.reason;
           card.dataset.skarmroCategory = decision.category || "unknown";
-          void recordFiltered(decision.category || "unknown");
+          recordFiltered(decision.category || "unknown");
         }
       }
     }
@@ -217,7 +224,8 @@
       if (title.trim()) {
         const decision = rules.classifyText(title, effectivePolicy());
         if (decision.action === "hide-content") {
-          void recordFiltered(decision.category || "watch");
+          recordFiltered(decision.category || "watch");
+          recordReceipt("video-blocked", "Auto Protect blockerade en video i kategorin " + (decision.category || "okänd"));
           location.replace("https://www.youtube.com/");
           return true;
         }
