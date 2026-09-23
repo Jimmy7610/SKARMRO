@@ -28,6 +28,79 @@
     return false;
   };
 
+  const showBlockedSearchNotice = (decision, query) => {
+    if (document.getElementById("skarmro-blocked-search")) return;
+
+    const notice = document.createElement("div");
+    notice.id = "skarmro-blocked-search";
+    notice.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483647",
+      "background:#0d1117",
+      "color:#f3f6fb",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "padding:24px",
+      "font-family:system-ui,-apple-system,Segoe UI,sans-serif"
+    ].join(";");
+
+    const panel = document.createElement("div");
+    panel.style.cssText = [
+      "max-width:620px",
+      "width:100%",
+      "background:#151b23",
+      "border:1px solid #2b3544",
+      "border-radius:20px",
+      "padding:28px",
+      "box-sizing:border-box"
+    ].join(";");
+
+    const title = document.createElement("h1");
+    title.textContent = "Sökningen blockerades av SKÄRMRO";
+    title.style.cssText = "font-size:28px;margin:0 0 12px";
+
+    const body = document.createElement("p");
+    body.textContent =
+      "Auto Protect bedömde sökningen som olämplig för barn. Sökningen visades därför inte.";
+    body.style.cssText = "color:#b7c2cf;font-size:16px;line-height:1.5;margin:0 0 18px";
+
+    const detail = document.createElement("div");
+    detail.textContent = "Kategori: " + (decision.category || "skyddad kategori");
+    detail.style.cssText = "color:#8fa3b8;font-size:14px;margin-bottom:18px";
+
+    const button = document.createElement("button");
+    button.textContent = "Tillbaka till YouTube";
+    button.style.cssText = [
+      "border:0",
+      "border-radius:12px",
+      "padding:12px 18px",
+      "font-weight:700",
+      "cursor:pointer"
+    ].join(";");
+    button.addEventListener("click", () => {
+      location.href = "https://www.youtube.com/";
+    });
+
+    panel.append(title, body, detail, button);
+    notice.append(panel);
+    document.documentElement.append(notice);
+  };
+
+  const blockUnsafeSearch = () => {
+    if (location.pathname !== "/results") return false;
+
+    const query = new URL(location.href).searchParams.get("search_query") || "";
+    if (!query.trim()) return false;
+
+    const decision = rules.classifyText(query, policy);
+    if (decision.action !== "hide-content") return false;
+
+    showBlockedSearchNotice(decision, query);
+    return true;
+  };
+
   const hideAutomaticContent = (root = document) => {
     const cardSelectors = [
       "ytd-video-renderer",
@@ -109,6 +182,7 @@
 
   const scan = () => {
     if (redirectIfBlockedNavigation()) return;
+    if (blockUnsafeSearch()) return;
     if (hideAutomaticContent()) return;
     hideBlockedContent();
   };
