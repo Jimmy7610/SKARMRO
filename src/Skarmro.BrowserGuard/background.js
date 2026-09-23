@@ -9,25 +9,67 @@ importScripts("routine-engine.js");
     { id:"bedtime", name:"Läggdags", description:"YouTube blockeras", enabled:true, start:"20:00", end:"07:00", mode:"pause" }
   ];
 
+  async function appendReceipt(kind, detail) {
+    const stored = await chrome.storage.local.get("policyReceipts");
+    const receipts = Array.isArray(stored.policyReceipts) ? [...stored.policyReceipts] : [];
+    receipts.unshift({
+      id: crypto.randomUUID(),
+      timestamp:new Date().toISOString(),
+      kind,
+      detail
+    });
+    await chrome.storage.local.set({ policyReceipts:receipts.slice(0,100) });
+  }
+
   async function recalculate() {
-    const stored = await chrome.storage.local.get("parentConfig");
+    const stored = await chrome.storage.local.get(["parentConfig","manualOverride","runtimeState"]);
     const routines = Array.isArray(stored.parentConfig?.routines)
       ? stored.parentConfig.routines
       : DEFAULT_ROUTINES;
 
     const now = new Date();
+    const nowMs = now.getTime();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const activeRoutine = globalThis.SkarmroRoutineEngine.findActive(routines, currentMinutes);
+
+    let manualOverride = stored.manualOverride || null;
+    if (manualOverride?.until && new Date(manualOverride.until).getTime() <= nowMs) {
+      manualOverride = null;
+      await chrome.storage.local.remove("manualOverride");
+      await appendReceipt("override-ended", "Tillfällig ändring återställd automatiskt");
+    }
+
+    const routineOverrides = globalThis.SkarmroRoutineEngine.overridesFor(activeRoutine);
+    const overrides = { ...routineOverrides };
+
+    if (manualOverride?.type === "pause") {
+      overrides.blockYouTube = true;
+    } else if (manualOverride?.type === "access") {
+      overrides.blockYouTube = false;
+    }
 
     const runtimeState = {
       updatedAt:now.toISOString(),
       activeRoutine,
-      overrides:globalThis.SkarmroRoutineEngine.overridesFor(activeRoutine)
+      manualOverride,
+      overrides
     };
 
+    const previous = stored.runtimeState || null;
     await chrome.storage.local.set({ runtimeState });
-    chrome.action.setBadgeText({ text: activeRoutine ? "ON" : "" });
-    chrome.action.setBadgeBackgroundColor({ color:"#4e9f79" });
+
+    const previousId = previous?.activeRoutine?.id || null;
+    const nextId = activeRoutine?.id || null;
+    if (previousId !== nextId) {
+      if (activeRoutine) {
+        await appendReceipt("routine-started", activeRoutine.name + " aktiverades");
+      } else if (previousId) {
+        await appendReceipt("routine-ended", "Aktiv rutin avslutades");
+      }
+    }
+
+    chrome.action.setBadgeText({ text: overrides.blockYouTube ? "PAUS" : activeRoutine ? "ON" : "" });
+    chrome.action.setBadgeBackgroundColor({ color:overrides.blockYouTube ? "#a96b55" : "#4e9f79" });
   }
 
   chrome.runtime.onInstalled.addListener(() => {
@@ -45,7 +87,21 @@ importScripts("routine-engine.js");
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && changes.parentConfig) void recalculate();
+    if (areaName !== "local") return;
+    if (changes.parentConfig || changes.manualOverride) void recalculate();
+  });
+
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "skarmro:receipt") {
+      void appendReceipt(message.kind || "browser-event", message.detail || "Skyddshändelse");
+      sendResponse({ ok:true });
+      return;
+    }
+
+    if (message?.type === "skarmro:recalculate") {
+      void recalculate();
+      sendResponse({ ok:true });
+    }
   });
 
   void recalculate();
