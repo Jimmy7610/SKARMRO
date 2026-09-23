@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+require("../src/Skarmro.BrowserGuard/lexicon.js");
 const rules = require("../src/Skarmro.BrowserGuard/rules.js");
 
 const policy = {
@@ -128,4 +129,60 @@ test("rejects Shorts URL as channel input", () => {
     rules.normalizeBlockedChannelInput("https://www.youtube.com/shorts/abc123"),
     { ok: false, reason: "video-url" }
   );
+});
+
+
+test("Auto Protect blocks adult content in English", () => {
+  const result = rules.classifyText("XXX porn compilation", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "adult");
+});
+
+test("Auto Protect blocks adult content in Swedish", () => {
+  const result = rules.classifyText("porr och nakenbilder", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "adult");
+});
+
+test("Auto Protect blocks drug content", () => {
+  const result = rules.classifyText("How vaping and cannabis works", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "drugs");
+});
+
+test("Auto Protect blocks gambling content", () => {
+  const result = rules.classifyText("Best online casino slots", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "gambling");
+});
+
+test("Auto Protect blocks self-harm content", () => {
+  const result = rules.classifyText("self harm tutorial", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "selfHarm");
+});
+
+test("Auto Protect blocks strong profanity", () => {
+  const result = rules.classifyText("this is fucking insane", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "profanity");
+});
+
+test("Auto Protect avoids substring false positive", () => {
+  const result = rules.classifyText("Essex travel guide", { autoProtect: true });
+  assert.equal(result.action, "allow");
+});
+
+test("manual custom blocked word works with Auto Protect disabled", () => {
+  const result = rules.classifyText("Minecraft scary mod", {
+    autoProtect: false,
+    customBlockedWords: ["scary mod"]
+  });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "custom");
+});
+
+test("ordinary child-friendly title is allowed", () => {
+  const result = rules.classifyText("Funny cats playing with bubbles", { autoProtect: true });
+  assert.equal(result.action, "allow");
 });
