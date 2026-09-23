@@ -130,3 +130,12 @@
 - Child SID targeting — PASS
 - Blocked process terminated — PASS
 - Legacy enforcement event persisted — PASS
+
+
+### Junior Launcher integration
+- Junior Launcher dynamic app projection — BUILD PASS
+- Parent App publishes allowed apps to launcher projection — BUILD PASS
+- Launcher fallback apps — BUILT
+- Separate child-readable launcher policy — BUILT
+- Native Guard policy remains private — PASS by design
+- WILMA projection sync script — BUILT
