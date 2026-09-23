@@ -137,3 +137,42 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 Important: Native Windows enforcement remains blocked on WILMA until trusted code signing is available. Do not disable Smart App Control to hide that release blocker.
+
+
+## Zero-cost native completion
+
+The current zero-budget Windows stack now includes:
+
+- child-SID-aware Guard enforcement
+- verified block enforcement on Windows 11 Home
+- verified allow-path for Chrome, Calculator and Paint
+- native app-policy editor in Parent App source
+- native Protection Health reader
+- native enforcement receipts / legacy event compatibility
+- dynamic Junior Launcher app tiles
+- separate child-readable launcher projection
+- single-instance Junior Launcher
+- launcher foreground return after child app exits
+- secure parent handoff via Windows lock/switch-user
+- signed-only Junior Launcher autostart installer
+- scheduled-task restart-on-failure configuration
+- launcher health and rollback scripts
+- PowerShell parser checks in Windows CI
+- zero-cost native validation suite
+
+Run the current WILMA-safe validation:
+
+```powershell
+cd C:\SKARMRO
+git pull
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\native\07-run-zero-cost-native-validation.ps1
+```
+
+This validation does not install or start unsigned native binaries and does not modify Smart App Control.
+
+### Current external blocker
+
+The newest native Guard, Parent App and Junior Launcher cannot be deployed on WILMA until the binaries are Authenticode-signed with a trusted code-signing identity. The repository contains the signing and deployment pipeline, but the actual trusted certificate is still an external prerequisite.
+
+Do not disable Smart App Control to bypass this.
