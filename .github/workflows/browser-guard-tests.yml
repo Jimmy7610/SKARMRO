@@ -42,3 +42,6 @@ jobs:
 
       - name: Run Browser Guard rule tests
         run: node --test tests/browser-guard-rules.test.cjs
+
+      - name: Run routine engine tests
+        run: node --test tests/browser-guard-routines.test.cjs
