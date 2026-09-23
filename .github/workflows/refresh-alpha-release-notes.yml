@@ -1,0 +1,22 @@
+name: Refresh Alpha Release Notes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/release/v0.1.0-alpha-refresh.trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit v0.1.0-alpha --repo "$GITHUB_REPOSITORY" --notes-file docs/RELEASE-v0.1.0-alpha.md
