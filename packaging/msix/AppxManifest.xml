@@ -39,7 +39,7 @@
           <desktop:StartupTask TaskId="SkarmroJuniorLauncher" Enabled="true" DisplayName="SKÄRMRO Junior Launcher" />
         </desktop:Extension>
         <desktop6:Extension Category="windows.service" Executable="GuardService\Skarmro.GuardService.exe" EntryPoint="Windows.FullTrustApplication">
-          <desktop6:Service Name="SkarmroGuardService" StartupType="auto" StartAccount="localSystem" />
+          <desktop6:Service Name="SkarmroGuardServiceMsix" StartupType="auto" StartAccount="localSystem" />
         </desktop6:Extension>
       </Extensions>
     </Application>
