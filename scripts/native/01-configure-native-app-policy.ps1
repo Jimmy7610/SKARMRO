@@ -18,6 +18,7 @@ $child = Get-LocalUser -Name $childName -ErrorAction Stop
 $childSid = $child.SID.Value
 
 $blocked = @(
+    "Skarmro.BlockedProbe.exe",
     "powershell.exe",
     "pwsh.exe",
     "cmd.exe",
