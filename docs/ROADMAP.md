@@ -105,3 +105,9 @@
 - Windows 11 Home + Pro
 - Multiple OEMs
 - Reliability / support / willingness-to-pay
+
+
+### Validation update
+- Temporary Access + Auto Restore — PASS
+- Parent cancel override — PASS
+- 1-minute test override — PASS
