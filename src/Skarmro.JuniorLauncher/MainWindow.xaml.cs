@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,7 +30,11 @@ public sealed class LauncherProjection
 
 public partial class MainWindow : Window
 {
+    [DllImport("user32.dll")]
+    private static extern bool LockWorkStation();
+
     private bool _allowClose;
+    private readonly HashSet<string> _allowedProcesses = new(StringComparer.OrdinalIgnoreCase);
 
     private static readonly string ProjectionPath =
         Path.Combine(
@@ -50,6 +55,10 @@ public partial class MainWindow : Window
             .GroupBy(app => app.ProcessName, StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
             .ToArray();
+
+        _allowedProcesses.Clear();
+        foreach (var app in apps)
+            _allowedProcesses.Add(app.ProcessName);
 
         AppTilesPanel.Children.Clear();
 
@@ -144,14 +153,35 @@ public partial class MainWindow : Window
         return button;
     }
 
-    private void Launch_Click(object sender, RoutedEventArgs e)
+    private async void Launch_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.Tag is not string command)
             return;
 
+        LoadLauncherApps();
+
+        if (!_allowedProcesses.Contains(command))
+        {
+            MessageBox.Show(
+                "Appen finns inte längre i den godkända listan.",
+                "SKÄRMRO",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
         try
         {
-            Process.Start(new ProcessStartInfo(command) { UseShellExecute = true });
+            using var process = Process.Start(new ProcessStartInfo(command) { UseShellExecute = true });
+
+            if (process is not null)
+                await process.WaitForExitAsync();
+
+            Activate();
+            WindowState = WindowState.Maximized;
+            Topmost = true;
+            Topmost = false;
+            Focus();
         }
         catch (Exception ex)
         {
@@ -169,13 +199,16 @@ public partial class MainWindow : Window
             Keyboard.Modifiers.HasFlag(ModifierKeys.Control) &&
             Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
         {
-            MessageBox.Show(
-                "Föräldraläge kräver Native Guard-auktorisering i produktversionen.\n\n" +
-                "I Gate 0: använd Ctrl+Alt+Delete och välj Byt användare.",
-                "SKÄRMRO Förälder",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
             e.Handled = true;
+
+            if (!LockWorkStation())
+            {
+                MessageBox.Show(
+                    "Kunde inte låsa Windows. Använd Ctrl+Alt+Delete och välj Byt användare.",
+                    "SKÄRMRO Förälder",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
         }
     }
 
