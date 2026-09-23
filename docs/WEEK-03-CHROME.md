@@ -72,3 +72,33 @@ Next manual validation:
 - blocked-channel shadow filtering
 - channel page redirect
 - verify normal channels remain unaffected
+
+
+## Browser Guard v0.4.0 — Auto Protect
+
+Automatic protection is enabled by default and does not require the parent to configure a blocklist first.
+
+Initial local categories:
+- adult content
+- drugs and vaping
+- gambling
+- graphic violence
+- self-harm
+- strong profanity
+
+Languages in the initial lexicon:
+- Swedish
+- English
+
+The filter uses token/phrase matching rather than naive substring matching to reduce obvious false positives.
+
+Manual controls remain available:
+- blocked channels
+- custom blocked words/phrases
+- Shorts on/off
+
+Custom blocked words continue to work even if Auto Protect is disabled.
+
+### Product limitation
+
+Auto Protect is fully automatic in operation, but keyword/text classification cannot guarantee perfect detection of all unsuitable content. False positives/negatives must be measured during pilot and improved with fixtures, allowlists and additional classifiers.
