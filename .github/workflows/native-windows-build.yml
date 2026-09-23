@@ -9,12 +9,14 @@ on:
       - "src/Skarmro.GuardService/**"
       - "src/Skarmro.ParentApp/**"
       - "src/Skarmro.JuniorLauncher/**"
+      - "scripts/native/**"
       - ".github/workflows/native-windows-build.yml"
   pull_request:
     paths:
       - "src/Skarmro.GuardService/**"
       - "src/Skarmro.ParentApp/**"
       - "src/Skarmro.JuniorLauncher/**"
+      - "scripts/native/**"
       - ".github/workflows/native-windows-build.yml"
 
 jobs:
