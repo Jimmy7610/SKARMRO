@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop desktop6 rescap">
+
+  <Identity Name="SKARMRO.Dev" Publisher="CN=SKARMRO Development" Version="0.1.0.0" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>SKÄRMRO</DisplayName>
+    <PublisherDisplayName>SKÄRMRO Development</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+    <Resource Language="sv-se" />
+  </Resources>
+
+  <Applications>
+    <Application Id="SKARMRO" Executable="ParentApp\Skarmro.ParentApp.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="SKÄRMRO"
+        Description="Parental controls for Windows"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <desktop:Extension Category="windows.startupTask" Executable="JuniorLauncher\Skarmro.JuniorLauncher.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="SkarmroJuniorLauncher" Enabled="true" DisplayName="SKÄRMRO Junior Launcher" />
+        </desktop:Extension>
+        <desktop6:Extension Category="windows.service" Executable="GuardService\Skarmro.GuardService.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop6:Service Name="SkarmroGuardService" StartupType="auto" StartAccount="localSystem" />
+        </desktop6:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="packagedServices" />
+    <rescap:Capability Name="localSystemServices" />
+  </Capabilities>
+</Package>
