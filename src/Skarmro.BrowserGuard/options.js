@@ -46,7 +46,9 @@
     policy: structuredClone(defaultPolicy),
     parentConfig: structuredClone(defaultParentConfig),
     runtimeState:null,
-    filterStats:{}
+    filterStats:{},
+    receipts:[],
+    manualOverride:null
   };
 
   const viewTitles = {
@@ -159,6 +161,55 @@
     return "Normal";
   }
 
+  function formatUntil(value) {
+    if (!value) return "";
+    try {
+      return new Date(value).toLocaleTimeString("sv-SE", { hour:"2-digit", minute:"2-digit" });
+    } catch {
+      return "";
+    }
+  }
+
+  function renderReceipts() {
+    const list = $("receiptList");
+    if (!list) return;
+    list.innerHTML = "";
+
+    const receipts = state.receipts.slice(0,12);
+    if (receipts.length === 0) {
+      list.innerHTML = '<div class="receipt-empty">Inga Policy Receipts ännu.</div>';
+      return;
+    }
+
+    for (const receipt of receipts) {
+      const row = document.createElement("div");
+      row.className = "receipt-row";
+      const time = new Date(receipt.timestamp).toLocaleString("sv-SE", {
+        month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"
+      });
+      row.innerHTML = `
+        <div class="receipt-time">${time}</div>
+        <div><div class="receipt-kind">${receipt.kind}</div><div class="receipt-detail">${receipt.detail}</div></div>
+        <div class="health-badge good">KVITTO</div>
+      `;
+      list.appendChild(row);
+    }
+  }
+
+  function renderOverride() {
+    const el = $("overrideStatus");
+    if (!el) return;
+
+    const override = state.manualOverride;
+    if (!override?.until) {
+      el.textContent = "Ingen tillfällig ändring aktiv.";
+      return;
+    }
+
+    const label = override.type === "pause" ? "YouTube pausat" : "Extra tid";
+    el.textContent = `${label} till ${formatUntil(override.until)}. Återställs automatiskt.`;
+  }
+
   function renderOverview() {
     $("overviewAutoProtect").textContent = state.policy.autoProtect !== false ? "På" : "Av";
     $("overviewShorts").textContent = state.policy.blockShorts !== false ? "Blockeras" : "Tillåts";
@@ -171,6 +222,8 @@
 
     const total = Number(state.filterStats.total || 0);
     $("overviewFiltered").textContent = String(total);
+    renderOverride();
+    renderReceipts();
 
     $("healthAutoText").textContent = state.policy.autoProtect !== false
       ? "Aktivt och konfigurerat."
@@ -207,7 +260,7 @@
   }
 
   async function load() {
-    const local = await chrome.storage.local.get(["browserPolicy","parentConfig","runtimeState"]);
+    const local = await chrome.storage.local.get(["browserPolicy","parentConfig","runtimeState","policyReceipts","manualOverride"]);
     const session = await chrome.storage.session.get("filterStats");
 
     state.policy = {
@@ -225,9 +278,37 @@
     };
     state.runtimeState = local.runtimeState || null;
     state.filterStats = session.filterStats || {};
+    state.receipts = Array.isArray(local.policyReceipts) ? local.policyReceipts : [];
+    state.manualOverride = local.manualOverride || null;
 
     $("appVersion").textContent = chrome.runtime.getManifest().version;
     hydrateForm();
+  }
+
+  async function setManualOverride(type, minutes) {
+    if (type === "clear") {
+      await chrome.storage.local.remove("manualOverride");
+      state.manualOverride = null;
+      await chrome.runtime.sendMessage({ type:"skarmro:receipt", kind:"override-cleared", detail:"Tillfällig ändring avslutades av föräldern" });
+      await chrome.runtime.sendMessage({ type:"skarmro:recalculate" });
+      renderOverride();
+      showToast("Tillfällig ändring återställd");
+      return;
+    }
+
+    const until = new Date(Date.now() + Number(minutes) * 60000).toISOString();
+    const manualOverride = { type, until, createdAt:new Date().toISOString() };
+    await chrome.storage.local.set({ manualOverride });
+    state.manualOverride = manualOverride;
+
+    const detail = type === "pause"
+      ? `YouTube pausat i ${minutes} minuter`
+      : `Extra YouTube-tid i ${minutes} minuter`;
+
+    await chrome.runtime.sendMessage({ type:"skarmro:receipt", kind:type === "pause" ? "pause-now" : "temporary-access", detail });
+    await chrome.runtime.sendMessage({ type:"skarmro:recalculate" });
+    renderOverride();
+    showToast(detail);
   }
 
   async function save() {
@@ -246,6 +327,11 @@
       };
 
       await chrome.storage.local.set({ browserPolicy:policy, parentConfig });
+      await chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind:"policy-saved",
+        detail:"Föräldrainställningar och rutiner sparades"
+      });
       state.policy = policy;
       state.parentConfig = parentConfig;
       refs.saveState.textContent = "Alla ändringar sparade";
@@ -269,6 +355,13 @@
   qsa(".jump").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.jump)));
   refs.saveAll.addEventListener("click", save);
 
+  qsa(".quick-action").forEach((button) => {
+    button.addEventListener("click", () => {
+      setManualOverride(button.dataset.override, button.dataset.minutes)
+        .catch((error) => showToast(error.message || "Kunde inte ändra tillgång"));
+    });
+  });
+
   document.addEventListener("change", (event) => {
     if (event.target.closest(".main")) markDirty();
   });
@@ -281,6 +374,14 @@
     if (changes.runtimeState) {
       state.runtimeState = changes.runtimeState.newValue || null;
       renderOverview();
+    }
+    if (changes.policyReceipts) {
+      state.receipts = Array.isArray(changes.policyReceipts.newValue) ? changes.policyReceipts.newValue : [];
+      renderReceipts();
+    }
+    if (changes.manualOverride) {
+      state.manualOverride = changes.manualOverride.newValue || null;
+      renderOverride();
     }
   });
 
