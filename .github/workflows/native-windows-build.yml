@@ -26,10 +26,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.401"
+      - name: Inspect installed .NET SDKs
+        shell: pwsh
+        run: |
+          dotnet --info
+          $sdks = dotnet --list-sdks
+          $sdks
+          if (-not ($sdks -match "^10\.")) {
+            throw ".NET 10 SDK is not preinstalled on this runner."
+          }
 
       - name: Build Guard Service
         run: dotnet build src/Skarmro.GuardService/Skarmro.GuardService.csproj -c Release
