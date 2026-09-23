@@ -144,3 +144,13 @@ textarea { resize:vertical; line-height:1.45; }
   .routine-row input[type="time"], .routine-row select { grid-column:2; }
   .save-state { display:none; }
 }
+
+.quick-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+.quick-action { padding:10px 12px; font-size:12px; }
+.receipt-list { display:grid; gap:8px; }
+.receipt-row { display:grid; grid-template-columns:130px 1fr auto; gap:12px; align-items:center; padding:11px 0; border-bottom:1px solid #202b37; }
+.receipt-row:last-child { border-bottom:0; }
+.receipt-time { color:var(--soft); font-size:12px; }
+.receipt-kind { font-weight:800; }
+.receipt-detail { color:var(--muted); font-size:12px; }
+.receipt-empty { color:var(--soft); padding:8px 0; }
