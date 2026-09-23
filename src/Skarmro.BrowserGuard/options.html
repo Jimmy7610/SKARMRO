@@ -11,8 +11,18 @@
     <header>
       <div class="badge">SKÄRMRO</div>
       <h1>Browser Guard</h1>
-      <p>Styr vad som filtreras på YouTube i barnets Chrome.</p>
+      <p>Automatiskt barnskydd för YouTube, med manuella regler som komplement.</p>
     </header>
+
+    <section class="card">
+      <label class="toggle-row">
+        <span>
+          <strong>Auto Protect</strong>
+          <small>Filtrerar automatiskt vanliga olämpliga ord och kategorier på svenska och engelska.</small>
+        </span>
+        <input id="autoProtect" type="checkbox">
+      </label>
+    </section>
 
     <section class="card">
       <label class="toggle-row">
@@ -25,12 +35,25 @@
     </section>
 
     <section class="card">
+      <strong>Auto Protect-kategorier</strong>
+      <small>Vuxeninnehåll · Droger/vape · Gambling · Grovt våld · Självskada · Grovt språk</small>
+    </section>
+
+    <section class="card">
+      <label for="customBlockedWords">
+        <strong>Egna blockerade ord</strong>
+        <small>Ett ord eller en fras per rad. Dessa blockeras även om Auto Protect stängs av.</small>
+      </label>
+      <textarea id="customBlockedWords" rows="6" placeholder="exempelord&#10;exempelfras"></textarea>
+    </section>
+
+    <section class="card">
       <label for="blockedChannels">
         <strong>Blockerade YouTube-kanaler</strong>
-        <small>En kanal per rad. Använd @handle eller kanalens adress. Videolänkar som /watch?v=... är inte kanaladresser.</small>
+        <small>Kan normalt blockeras direkt från SKÄRMRO-knappen på en video. Du kan också använda @handle eller kanalens adress här.</small>
       </label>
 
-      <textarea id="blockedChannels" rows="10" placeholder="@exempelkanal&#10;https://www.youtube.com/channel/UC123..."></textarea>
+      <textarea id="blockedChannels" rows="8" placeholder="@exempelkanal&#10;https://www.youtube.com/channel/UC123..."></textarea>
     </section>
 
     <div class="actions">
@@ -40,7 +63,7 @@
 
     <section class="note">
       <strong>Gate 0-prototyp:</strong>
-      Browser Guard är ännu inte ett manipulationssäkert skydd. Protection Health byggs senare för att upptäcka om extensionen stängs av eller tas bort.
+      Auto Protect arbetar automatiskt men kan inte garantera perfekt innehållsklassning. Protection Health byggs senare för att upptäcka om extensionen stängs av eller tas bort.
     </section>
   </main>
 
