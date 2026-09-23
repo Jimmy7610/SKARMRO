@@ -21,7 +21,9 @@
       label: "Gambling",
       terms: [
         "casino", "gambling", "betting", "sportsbook", "slot machine",
-        "slots", "online casino", "kasino", "spelautomat", "betting"
+        "slot", "slots", "jackpot", "jackpots", "roulette", "blackjack",
+        "poker", "online casino", "kasino", "spelautomat", "spelautomater",
+        "jackpott", "roulette", "blackjack", "poker", "betting"
       ]
     },
     violence: {
