@@ -18,11 +18,11 @@ Add-AppxPackage -Path $package -ForceApplicationShutdown
 Write-Host ""
 Get-AppxPackage -Name "SKARMRO.Dev" | Select-Object Name, PackageFullName, Status
 Write-Host ""
-$service = Get-Service -Name "SkarmroGuardService" -ErrorAction SilentlyContinue
+$service = Get-Service -Name "SkarmroGuardServiceMsix" -ErrorAction SilentlyContinue
 if ($service) {
     Write-Host "Guard service registered: $($service.Status)" -ForegroundColor Green
 } else {
-    Write-Warning "MSIX installed, but SkarmroGuardService was not found."
+    Write-Warning "MSIX installed, but SkarmroGuardServiceMsix was not found."
 }
 Write-Host ""
 Write-Host "Do not modify Smart App Control. This is a locally trusted development MSIX."
