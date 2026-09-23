@@ -88,11 +88,37 @@
     document.documentElement.append(notice);
   };
 
+  const getCurrentSearchQuery = () => {
+    try {
+      const fromUrl = new URL(location.href).searchParams.get("search_query") || "";
+      if (fromUrl.trim()) return fromUrl.trim();
+    } catch {
+      // Fall through to visible search UI.
+    }
+
+    const selectors = [
+      'input[name="search_query"]',
+      'ytd-searchbox input#search',
+      'input#search',
+      'form[action="/results"] input'
+    ];
+
+    for (const selector of selectors) {
+      const input = document.querySelector(selector);
+      const value = input?.value || input?.getAttribute("value") || "";
+      if (String(value).trim()) {
+        return String(value).trim();
+      }
+    }
+
+    return "";
+  };
+
   const blockUnsafeSearch = () => {
     if (location.pathname !== "/results") return false;
 
-    const query = new URL(location.href).searchParams.get("search_query") || "";
-    if (!query.trim()) return false;
+    const query = getCurrentSearchQuery();
+    if (!query) return false;
 
     const decision = rules.classifyText(query, policy);
     if (decision.action !== "hide-content") return false;
@@ -291,6 +317,22 @@
       sendResponse({
         ok: true,
         channel: findCurrentChannel()
+      });
+    }
+
+    if (message?.type === "skarmro:get-protection-status") {
+      const query = location.pathname === "/results" ? getCurrentSearchQuery() : "";
+      const queryDecision = query ? rules.classifyText(query, policy) : null;
+
+      sendResponse({
+        ok: true,
+        status: {
+          autoProtect: policy.autoProtect !== false,
+          blockShorts: policy.blockShorts !== false,
+          query,
+          queryDecision,
+          url: location.href
+        }
       });
     }
   });
