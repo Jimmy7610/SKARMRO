@@ -1,0 +1,40 @@
+name: Native Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Skarmro.GuardService/**"
+      - "src/Skarmro.ParentApp/**"
+      - "src/Skarmro.JuniorLauncher/**"
+      - ".github/workflows/native-windows-build.yml"
+  pull_request:
+    paths:
+      - "src/Skarmro.GuardService/**"
+      - "src/Skarmro.ParentApp/**"
+      - "src/Skarmro.JuniorLauncher/**"
+      - ".github/workflows/native-windows-build.yml"
+
+jobs:
+  build-native:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build Guard Service
+        run: dotnet build src/Skarmro.GuardService/Skarmro.GuardService.csproj -c Release
+
+      - name: Build Parent App
+        run: dotnet build src/Skarmro.ParentApp/Skarmro.ParentApp.csproj -c Release
+
+      - name: Build Junior Launcher
+        run: dotnet build src/Skarmro.JuniorLauncher/Skarmro.JuniorLauncher.csproj -c Release
