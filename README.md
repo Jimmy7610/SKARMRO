@@ -105,3 +105,35 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 This does not install or start the Windows service.
+
+
+## Morning Build v0.8.0
+
+The current testable browser-layer build includes:
+
+- SKÄRMRO Parent App dashboard inside Browser Guard
+- Auto Protect (Swedish + English)
+- Shorts blocking
+- manual channel blocking
+- custom blocked words
+- routines
+- Pause Now
+- temporary access + auto restore
+- child access requests with parent approve/deny
+- Protection Health runtime heartbeat
+- Policy Receipts
+- anonymous per-session filter counters
+- packaged Browser Guard artifact from CI
+- native WPF Parent App source
+- native WPF Junior Launcher source
+- native Guard / Parent App / Junior Launcher build successfully in Windows CI
+
+Morning test:
+
+```powershell
+cd C:\SKARMRO
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\99-morning-test.ps1
+```
+
+Important: Native Windows enforcement remains blocked on WILMA until trusted code signing is available. Do not disable Smart App Control to hide that release blocker.
