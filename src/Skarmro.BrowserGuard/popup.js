@@ -73,7 +73,11 @@
 
     const stored = await chrome.storage.local.get("browserPolicy");
     const policy = {
+      autoProtect: stored.browserPolicy?.autoProtect !== false,
       blockShorts: stored.browserPolicy?.blockShorts !== false,
+      customBlockedWords: Array.isArray(stored.browserPolicy?.customBlockedWords)
+        ? [...stored.browserPolicy.customBlockedWords]
+        : [],
       blockedChannels: Array.isArray(stored.browserPolicy?.blockedChannels)
         ? [...stored.browserPolicy.blockedChannels]
         : []
