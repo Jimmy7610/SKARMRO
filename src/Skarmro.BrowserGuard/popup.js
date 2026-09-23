@@ -1,5 +1,6 @@
 (() => {
   const protectionStatus = document.getElementById("protectionStatus");
+  const filterStats = document.getElementById("filterStats");
   const channelName = document.getElementById("channelName");
   const toggleChannel = document.getElementById("toggleChannel");
   const status = document.getElementById("status");
@@ -35,6 +36,43 @@
   }
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function loadFilterStats() {
+    try {
+      const stored = await chrome.storage.session.get("filterStats");
+      const stats = stored.filterStats || {};
+      const total = Number(stats.total || 0);
+
+      if (total === 0) {
+        filterStats.textContent = "Inget filtrerat ännu";
+        return;
+      }
+
+      const labels = {
+        adult: "vuxeninnehåll",
+        drugs: "droger/vape",
+        gambling: "gambling",
+        violence: "grovt våld",
+        selfHarm: "självskada",
+        profanity: "grovt språk",
+        custom: "egna regler",
+        search: "sökningar",
+        watch: "videor",
+        unknown: "övrigt"
+      };
+
+      const details = Object.entries(stats)
+        .filter(([key, value]) => key !== "total" && Number(value) > 0)
+        .map(([key, value]) => `${labels[key] || key}: ${value}`)
+        .join(" · ");
+
+      filterStats.textContent = details
+        ? `${total} filtrerat · ${details}`
+        : `${total} filtrerat`;
+    } catch {
+      filterStats.textContent = "Statistik kunde inte läsas";
+    }
+  }
 
   async function detectProtectionStatus() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -147,7 +185,7 @@
     chrome.runtime.openOptionsPage();
   });
 
-  Promise.all([loadPolicy(), detectProtectionStatus(), detectCurrentChannel()])
+  Promise.all([loadPolicy(), loadFilterStats(), detectProtectionStatus(), detectCurrentChannel()])
     .then(render)
     .catch((error) => {
       status.textContent = "Kunde inte läsa sidan: " + error.message;
