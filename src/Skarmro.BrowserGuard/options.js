@@ -48,7 +48,8 @@
     runtimeState:null,
     filterStats:{},
     receipts:[],
-    manualOverride:null
+    manualOverride:null,
+    accessRequests:[]
   };
 
   const viewTitles = {
@@ -170,6 +171,76 @@
     }
   }
 
+  function renderRequests() {
+    const list = $("requestList");
+    if (!list) return;
+
+    const pending = state.accessRequests.filter((request) => request.status === "pending");
+    list.innerHTML = "";
+
+    if (pending.length === 0) {
+      list.innerHTML = '<div class="muted">Inga väntande förfrågningar.</div>';
+      return;
+    }
+
+    for (const request of pending) {
+      const row = document.createElement("div");
+      row.className = "request-row";
+      const time = new Date(request.createdAt).toLocaleTimeString("sv-SE", { hour:"2-digit", minute:"2-digit" });
+      row.innerHTML = `
+        <div class="request-row-head">
+          <div><strong>${request.minutes} min extra tid</strong><br><small>Begärd ${time}</small></div>
+          <span class="health-badge warn">VÄNTAR</span>
+        </div>
+        <div class="request-actions">
+          <button class="primary request-approve" data-id="${request.id}">Godkänn</button>
+          <button class="ghost request-deny" data-id="${request.id}">Neka</button>
+        </div>
+      `;
+      list.appendChild(row);
+    }
+
+    list.querySelectorAll(".request-approve").forEach((button) => {
+      button.addEventListener("click", () => handleRequest(button.dataset.id, true));
+    });
+    list.querySelectorAll(".request-deny").forEach((button) => {
+      button.addEventListener("click", () => handleRequest(button.dataset.id, false));
+    });
+  }
+
+  async function updateRequestStatus(id, status) {
+    const requests = state.accessRequests.map((request) =>
+      request.id === id ? { ...request, status, handledAt:new Date().toISOString() } : request
+    );
+    state.accessRequests = requests;
+    await chrome.storage.local.set({ accessRequests:requests });
+    renderRequests();
+  }
+
+  async function handleRequest(id, approved) {
+    const request = state.accessRequests.find((item) => item.id === id);
+    if (!request) return;
+
+    if (approved) {
+      await setManualOverride("access", request.minutes);
+      await updateRequestStatus(id, "approved");
+      await chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind:"request-approved",
+        detail:`Föräldern godkände ${request.minutes} minuter extra tid`
+      });
+      showToast("Extra tid godkänd");
+    } else {
+      await updateRequestStatus(id, "denied");
+      await chrome.runtime.sendMessage({
+        type:"skarmro:receipt",
+        kind:"request-denied",
+        detail:"Föräldern nekade begäran om extra tid"
+      });
+      showToast("Förfrågan nekad");
+    }
+  }
+
   function renderReceipts() {
     const list = $("receiptList");
     if (!list) return;
@@ -223,6 +294,7 @@
     const total = Number(state.filterStats.total || 0);
     $("overviewFiltered").textContent = String(total);
     renderOverride();
+    renderRequests();
     renderReceipts();
 
     const heartbeatTime = state.runtimeState?.updatedAt ? new Date(state.runtimeState.updatedAt).getTime() : 0;
@@ -273,7 +345,7 @@
   }
 
   async function load() {
-    const local = await chrome.storage.local.get(["browserPolicy","parentConfig","runtimeState","policyReceipts","manualOverride"]);
+    const local = await chrome.storage.local.get(["browserPolicy","parentConfig","runtimeState","policyReceipts","manualOverride","accessRequests"]);
     const session = await chrome.storage.session.get("filterStats");
 
     state.policy = {
@@ -293,6 +365,7 @@
     state.filterStats = session.filterStats || {};
     state.receipts = Array.isArray(local.policyReceipts) ? local.policyReceipts : [];
     state.manualOverride = local.manualOverride || null;
+    state.accessRequests = Array.isArray(local.accessRequests) ? local.accessRequests : [];
 
     $("appVersion").textContent = chrome.runtime.getManifest().version;
     hydrateForm();
@@ -395,6 +468,10 @@
     if (changes.manualOverride) {
       state.manualOverride = changes.manualOverride.newValue || null;
       renderOverride();
+    }
+    if (changes.accessRequests) {
+      state.accessRequests = Array.isArray(changes.accessRequests.newValue) ? changes.accessRequests.newValue : [];
+      renderRequests();
     }
   });
 
