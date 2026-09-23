@@ -178,6 +178,7 @@ public partial class MainWindow : Window
         {
             _nativePolicy.Enabled = true;
             NativePolicyStore.Write(_nativePolicy);
+            LauncherProjectionStore.WriteFrom(_nativePolicy);
 
             AppsPolicyStatusText.Text =
                 $"Sparad · {_nativePolicy.BlockedProcessNames.Length} blockerade · {_nativePolicy.AllowedProcessNames.Length} tillåtna";
@@ -187,6 +188,7 @@ public partial class MainWindow : Window
             MessageBox.Show(
                 "Appreglerna sparades för SkarmroChild.\n\n" +
                 "Blockerade processer börjar gälla direkt vid nästa processstart.\n" +
+                "Junior Launcher har uppdaterats med samma tillåt-lista.\n" +
                 "Smart App Control har inte ändrats.",
                 "SKÄRMRO",
                 MessageBoxButton.OK,
