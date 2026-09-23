@@ -225,6 +225,19 @@
     renderOverride();
     renderReceipts();
 
+    const heartbeatTime = state.runtimeState?.updatedAt ? new Date(state.runtimeState.updatedAt).getTime() : 0;
+    const heartbeatAge = heartbeatTime ? Date.now() - heartbeatTime : Number.POSITIVE_INFINITY;
+    const runtimeHealthy = heartbeatAge < 3 * 60 * 1000;
+
+    $("overviewExtensionHealth").textContent = runtimeHealthy ? "Aktiv" : "Ingen färsk heartbeat";
+    $("overviewExtensionHealth").className = runtimeHealthy ? "good-text" : "warn-text";
+    $("overviewHealthBadge").textContent = runtimeHealthy ? "Browser Guard OK" : "Kontrollera extension";
+    $("overviewHealthBadge").className = "health-badge " + (runtimeHealthy ? "good" : "warn");
+    $("browserHealthText").textContent = runtimeHealthy
+      ? "Background-runtime har lämnat en färsk heartbeat."
+      : "Ingen färsk runtime-heartbeat hittades. Ladda om eller kontrollera extensionen.";
+    $("browserHealthBadge").textContent = runtimeHealthy ? "OK" : "VARNING";
+
     $("healthAutoText").textContent = state.policy.autoProtect !== false
       ? "Aktivt och konfigurerat."
       : "Avstängt av föräldern.";
