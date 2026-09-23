@@ -10,6 +10,7 @@ builder.Services.AddWindowsService(options =>
 });
 
 builder.Services.AddHostedService<GuardWorker>();
+builder.Services.AddHostedService<PolicyIpcServer>();
 
 var host = builder.Build();
 await host.RunAsync();
