@@ -107,10 +107,10 @@
                 <span class="section-kicker">SNABBSTATUS</span>
                 <h3>Protection Health</h3>
               </div>
-              <span class="health-badge good">Browser Guard OK</span>
+              <span id="overviewHealthBadge" class="health-badge good">Kontrollerar…</span>
             </div>
             <div class="health-list">
-              <div><span>Chrome-extension</span><strong class="good-text">Aktiv</strong></div>
+              <div><span>Chrome-extension</span><strong id="overviewExtensionHealth" class="good-text">Kontrollerar…</strong></div>
               <div><span>Auto Protect</span><strong id="healthAutoOverview">Aktiv</strong></div>
               <div><span>Shorts-skydd</span><strong id="healthShortsOverview">Aktiv</strong></div>
               <div><span>Native Windows Guard</span><strong class="warn-text">Väntar på signerad build</strong></div>
@@ -237,7 +237,7 @@
         </div>
 
         <div class="health-grid">
-          <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Browser Guard</strong><small>Extensionen kör och kan filtrera YouTube.</small></div><b>OK</b></article>
+          <article id="browserHealthCard" class="health-card good-card"><span class="health-icon">✓</span><div><strong>Browser Guard</strong><small id="browserHealthText">Kontrollerar runtime-heartbeat…</small></div><b id="browserHealthBadge">…</b></article>
           <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Auto Protect</strong><small id="healthAutoText">Aktivt och konfigurerat.</small></div><b id="healthAutoBadge">OK</b></article>
           <article class="health-card warn-card"><span class="health-icon">!</span><div><strong>Native Windows Guard</strong><small>Beslutskärnan är testad, men WILMA blockerar osignerad runtime via Smart App Control.</small></div><b>VÄNTAR</b></article>
           <article class="health-card good-card"><span class="health-icon">✓</span><div><strong>Integritet</strong><small>Ingen keylogging, skärminspelning eller privat meddelandeläsning.</small></div><b>OK</b></article>
