@@ -186,3 +186,22 @@ test("ordinary child-friendly title is allowed", () => {
   const result = rules.classifyText("Funny cats playing with bubbles", { autoProtect: true });
   assert.equal(result.action, "allow");
 });
+
+
+test("Auto Protect blocks jackpot gambling content", () => {
+  const result = rules.classifyText("LARGEST JACKPOT OF MY LIFE", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "gambling");
+});
+
+test("Auto Protect blocks singular slot term", () => {
+  const result = rules.classifyText("best slot strategy", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "gambling");
+});
+
+test("Auto Protect blocks online casino search text", () => {
+  const result = rules.classifyText("online casino slots", { autoProtect: true });
+  assert.equal(result.action, "hide-content");
+  assert.equal(result.category, "gambling");
+});
