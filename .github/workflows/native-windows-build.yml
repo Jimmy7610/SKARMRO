@@ -44,3 +44,29 @@ jobs:
 
       - name: Build Junior Launcher
         run: dotnet build src/Skarmro.JuniorLauncher/Skarmro.JuniorLauncher.csproj -c Release
+
+      - name: Parse native PowerShell scripts
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem scripts\native\*.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+
+            if ($errors.Count -gt 0) {
+              Write-Host "Parser errors in $($_.FullName)"
+              $errors | ForEach-Object { Write-Host $_.Message }
+              $failed = $true
+            } else {
+              Write-Host "PASS $($_.Name)"
+            }
+          }
+
+          if ($failed) {
+            throw "One or more native PowerShell scripts contain parser errors."
+          }
