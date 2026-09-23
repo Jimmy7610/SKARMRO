@@ -271,14 +271,22 @@
     const el = $("overrideStatus");
     if (!el) return;
 
+    const cancelButton = $("cancelOverride");
     const override = state.manualOverride;
     if (!override?.until) {
       el.textContent = "Ingen tillfällig ändring aktiv.";
+      if (cancelButton) cancelButton.hidden = true;
       return;
     }
 
     const label = override.type === "pause" ? "YouTube pausat" : "Extra tid";
     el.textContent = `${label} till ${formatUntil(override.until)}. Återställs automatiskt.`;
+    if (cancelButton) {
+      cancelButton.hidden = false;
+      cancelButton.textContent = override.type === "access"
+        ? "Avbryt extra tid nu"
+        : "Avbryt paus nu";
+    }
   }
 
   function renderOverview() {
@@ -440,6 +448,11 @@
   qsa(".nav-item").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.view)));
   qsa(".jump").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.jump)));
   refs.saveAll.addEventListener("click", save);
+
+  $("cancelOverride")?.addEventListener("click", () => {
+    setManualOverride("clear")
+      .catch((error) => showToast(error.message || "Kunde inte avbryta tillfällig tillgång"));
+  });
 
   qsa(".quick-action").forEach((button) => {
     button.addEventListener("click", () => {
