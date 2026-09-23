@@ -9,7 +9,7 @@ public sealed record ProcessGuardPolicyValidationResult(
 public static class ProcessGuardPolicyValidator
 {
     private static readonly Regex SidPattern =
-        new("^S-1-5-21-(?:\d+-){3}\d+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        new(@"^S-1-5-21-(?:\d+-){3}\d+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static ProcessGuardPolicyValidationResult Validate(ProcessGuardPolicy? policy)
     {
