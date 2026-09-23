@@ -154,3 +154,9 @@ textarea { resize:vertical; line-height:1.45; }
 .receipt-kind { font-weight:800; }
 .receipt-detail { color:var(--muted); font-size:12px; }
 .receipt-empty { color:var(--soft); padding:8px 0; }
+
+.request-list { display:grid; gap:8px; }
+.request-row { display:grid; gap:10px; padding:12px; border:1px solid var(--line); border-radius:13px; background:#0e161f; }
+.request-row-head { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.request-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.request-actions button { padding:8px 10px; font-size:12px; }
