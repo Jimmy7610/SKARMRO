@@ -98,6 +98,32 @@ importScripts("routine-engine.js");
       return;
     }
 
+    if (message?.type === "skarmro:request-access") {
+      void (async () => {
+        const minutes = Math.max(5, Math.min(60, Number(message.minutes) || 15));
+        const stored = await chrome.storage.local.get("accessRequests");
+        const requests = Array.isArray(stored.accessRequests) ? [...stored.accessRequests] : [];
+
+        const recentPending = requests.find((request) =>
+          request.status === "pending" &&
+          Date.now() - new Date(request.createdAt).getTime() < 5 * 60 * 1000
+        );
+
+        if (!recentPending) {
+          requests.unshift({
+            id:crypto.randomUUID(),
+            createdAt:new Date().toISOString(),
+            minutes,
+            status:"pending"
+          });
+          await chrome.storage.local.set({ accessRequests:requests.slice(0,50) });
+          await appendReceipt("access-requested", "Barnet bad om " + minutes + " minuter extra tid");
+        }
+      })();
+      sendResponse({ ok:true });
+      return;
+    }
+
     if (message?.type === "skarmro:filtered") {
       void (async () => {
         const key = message.category || "unknown";
