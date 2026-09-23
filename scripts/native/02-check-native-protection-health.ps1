@@ -4,6 +4,7 @@ $root = "C:\ProgramData\Skarmro"
 $statusPath = Join-Path $root "guard-status.json"
 $policyPath = Join-Path $root "process-guard-policy.json"
 $receiptsPath = Join-Path $root "native-policy-receipts.jsonl"
+$legacyEventsPath = Join-Path $root "process-guard-events.jsonl"
 
 Write-Host ""
 Write-Host "=== SKARMRO Native Protection Health ===" -ForegroundColor Cyan
@@ -74,6 +75,16 @@ if (Test-Path $receiptsPath) {
             $_
         }
     }
+} elseif (Test-Path $legacyEventsPath) {
+    Write-Host "  Legacy runtime enforcement events:" -ForegroundColor Yellow
+    Get-Content $legacyEventsPath -Tail 10 | ForEach-Object {
+        try {
+            $evt = $_ | ConvertFrom-Json
+            "{0:u}  app-blocked  {1}  sid={2}  action={3}" -f ([DateTimeOffset]::Parse($evt.timestampUtc)), $evt.processName, $evt.ownerSid, $evt.action
+        } catch {
+            $_
+        }
+    }
 } else {
-    Write-Host "  No native receipts yet."
+    Write-Host "  No native receipts or enforcement events yet."
 }
