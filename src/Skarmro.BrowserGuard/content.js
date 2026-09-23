@@ -34,8 +34,41 @@
       policy.blockShorts !== false ? "true" : "false";
   };
 
+  const showRoutinePauseNotice = () => {
+    if (!runtimeState?.overrides?.blockYouTube) return false;
+    if (document.getElementById("skarmro-routine-pause")) return true;
+
+    const routineName = runtimeState.activeRoutine?.name || "Rutin";
+    const notice = document.createElement("div");
+    notice.id = "skarmro-routine-pause";
+    notice.style.cssText = [
+      "position:fixed","inset:0","z-index:2147483647","background:#0d1117","color:#f3f6fb",
+      "display:flex","align-items:center","justify-content:center","padding:24px",
+      "font-family:system-ui,-apple-system,Segoe UI,sans-serif"
+    ].join(";");
+
+    const panel = document.createElement("div");
+    panel.style.cssText = [
+      "max-width:620px","width:100%","background:#151b23","border:1px solid #2b3544",
+      "border-radius:20px","padding:30px","box-sizing:border-box"
+    ].join(";");
+
+    const title = document.createElement("h1");
+    title.textContent = "YouTube är pausat";
+    title.style.cssText = "font-size:30px;margin:0 0 12px";
+
+    const body = document.createElement("p");
+    body.textContent = routineName + " är aktiv just nu. YouTube blir tillgängligt igen när rutinen är slut.";
+    body.style.cssText = "color:#b7c2cf;font-size:16px;line-height:1.55;margin:0";
+
+    panel.append(title, body);
+    notice.append(panel);
+    document.documentElement.append(notice);
+    return true;
+  };
+
   const redirectIfBlockedNavigation = () => {
-    const decision = rules.classifyUrl(location.href, policy);
+    const decision = rules.classifyUrl(location.href, effectivePolicy());
 
     if (decision.action === "block-shorts" || decision.action === "hide-channel") {
       location.replace("https://www.youtube.com/");
@@ -137,7 +170,7 @@
     const query = getCurrentSearchQuery();
     if (!query) return false;
 
-    const decision = rules.classifyText(query, policy);
+    const decision = rules.classifyText(query, effectivePolicy());
     if (decision.action !== "hide-content") return false;
 
     showBlockedSearchNotice(decision, query);
@@ -164,7 +197,7 @@
         if (card.dataset.skarmroHidden) continue;
 
         const text = (card.textContent || "").trim();
-        const decision = rules.classifyText(text, policy);
+        const decision = rules.classifyText(text, effectivePolicy());
 
         if (decision.action === "hide-content") {
           card.style.setProperty("display", "none", "important");
@@ -182,7 +215,7 @@
         "";
 
       if (title.trim()) {
-        const decision = rules.classifyText(title, policy);
+        const decision = rules.classifyText(title, effectivePolicy());
         if (decision.action === "hide-content") {
           void recordFiltered(decision.category || "watch");
           location.replace("https://www.youtube.com/");
@@ -199,7 +232,7 @@
 
     for (const anchor of anchors) {
       const href = anchor.getAttribute("href");
-      const decision = rules.classifyUrl(href, policy);
+      const decision = rules.classifyUrl(href, effectivePolicy());
 
       if (decision.action === "block-shorts" || decision.action === "hide-channel") {
         const container =
@@ -232,6 +265,7 @@
   };
 
   const scan = () => {
+    if (showRoutinePauseNotice()) return;
     if (redirectIfBlockedNavigation()) return;
     if (blockUnsafeSearch()) return;
     if (hideAutomaticContent()) return;
@@ -257,11 +291,12 @@
   };
 
   async function loadPolicy() {
-    const stored = await chrome.storage.local.get("browserPolicy");
+    const stored = await chrome.storage.local.get(["browserPolicy","runtimeState"]);
     policy = {
       ...defaultPolicy,
       ...(stored.browserPolicy || {})
     };
+    runtimeState = stored.runtimeState || null;
     syncDocumentFlags();
   }
 
@@ -369,13 +404,15 @@
 
     if (message?.type === "skarmro:get-protection-status") {
       const query = location.pathname === "/results" ? getCurrentSearchQuery() : "";
-      const queryDecision = query ? rules.classifyText(query, policy) : null;
+      const queryDecision = query ? rules.classifyText(query, effectivePolicy()) : null;
 
       sendResponse({
         ok: true,
         status: {
-          autoProtect: policy.autoProtect !== false,
-          blockShorts: policy.blockShorts !== false,
+          autoProtect: effectivePolicy().autoProtect !== false,
+          blockShorts: effectivePolicy().blockShorts !== false,
+          activeRoutine: runtimeState?.activeRoutine || null,
+          youtubePaused: runtimeState?.overrides?.blockYouTube === true,
           query,
           queryDecision,
           url: location.href
@@ -385,12 +422,21 @@
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "local" || !changes.browserPolicy) return;
+    if (areaName !== "local") return;
 
-    policy = {
-      ...defaultPolicy,
-      ...(changes.browserPolicy.newValue || {})
-    };
+    if (changes.browserPolicy) {
+      policy = {
+        ...defaultPolicy,
+        ...(changes.browserPolicy.newValue || {})
+      };
+    }
+
+    if (changes.runtimeState) {
+      runtimeState = changes.runtimeState.newValue || null;
+      if (!runtimeState?.overrides?.blockYouTube) {
+        document.getElementById("skarmro-routine-pause")?.remove();
+      }
+    }
 
     syncDocumentFlags();
     scan();
