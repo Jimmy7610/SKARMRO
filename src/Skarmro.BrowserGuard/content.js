@@ -272,10 +272,32 @@
     const key = rules.normalizeChannelKey(href);
     if (!key) return null;
 
+    const ownerRoot =
+      anchor.closest("ytd-video-owner-renderer") ||
+      anchor.closest("ytd-channel-name") ||
+      anchor.closest("#owner") ||
+      anchor.parentElement;
+
+    const nearbyName =
+      ownerRoot?.querySelector?.("#text")?.textContent ||
+      ownerRoot?.querySelector?.("#channel-name")?.textContent ||
+      ownerRoot?.querySelector?.("yt-formatted-string")?.textContent ||
+      "";
+
+    const anchorText = (anchor.textContent || "").trim();
+    const ariaText = (anchor.getAttribute("aria-label") || "").trim();
+
+    const fallbackName = key.startsWith("handle:")
+      ? "@" + key.slice("handle:".length)
+      : key.startsWith("channel:")
+        ? key.slice("channel:".length)
+        : key;
+
     const name =
-      (anchor.textContent || "").trim() ||
-      (anchor.getAttribute("aria-label") || "").trim() ||
-      key;
+      String(nearbyName).trim() ||
+      anchorText ||
+      ariaText ||
+      fallbackName;
 
     return { key, name };
   }
