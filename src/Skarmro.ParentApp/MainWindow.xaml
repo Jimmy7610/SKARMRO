@@ -149,6 +149,7 @@
                                     <TextBlock Text="TILLÅTNA APPAR" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
                                     <TextBlock Text="Tillåt-lista" FontSize="22" FontWeight="Bold" Margin="0,4,0,10"/>
                                     <ListBox x:Name="AllowedAppsList" MinHeight="260" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Skriv programnamn, t.ex. calc.exe" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,6"/>
                                     <DockPanel>
                                         <TextBox x:Name="AllowedAppInput" MinWidth="220" Margin="0,0,8,0" ToolTip="Exempel: calc.exe"/>
                                         <Button Content="Lägg till" Click="AddAllowedApp_Click"/>
@@ -162,6 +163,7 @@
                                     <TextBlock Text="BLOCKERADE APPAR" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
                                     <TextBlock Text="Guard blockerar dessa" FontSize="22" FontWeight="Bold" Margin="0,4,0,10"/>
                                     <ListBox x:Name="BlockedAppsList" MinHeight="260" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Skriv programnamn, t.ex. notepad.exe" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,6"/>
                                     <DockPanel>
                                         <TextBox x:Name="BlockedAppInput" MinWidth="220" Margin="0,0,8,0" ToolTip="Exempel: msedge.exe"/>
                                         <Button Content="Blockera" Click="AddBlockedApp_Click"/>
