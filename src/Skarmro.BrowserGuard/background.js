@@ -1,3 +1,5 @@
+importScripts("routine-engine.js");
+
 (() => {
   const DEFAULT_ROUTINES = [
     { id:"school", name:"Skola", description:"Skärpt webbskydd", enabled:false, start:"08:00", end:"14:00", mode:"focus" },
@@ -7,36 +9,20 @@
     { id:"bedtime", name:"Läggdags", description:"YouTube blockeras", enabled:true, start:"20:00", end:"07:00", mode:"pause" }
   ];
 
-  function minutes(value) {
-    const [h,m] = String(value || "00:00").split(":").map(Number);
-    return h * 60 + m;
-  }
-
-  function isActive(routine, now = new Date()) {
-    if (!routine?.enabled) return false;
-    const current = now.getHours() * 60 + now.getMinutes();
-    const start = minutes(routine.start);
-    const end = minutes(routine.end);
-    if (start === end) return true;
-    if (start < end) return current >= start && current < end;
-    return current >= start || current < end;
-  }
-
   async function recalculate() {
     const stored = await chrome.storage.local.get("parentConfig");
     const routines = Array.isArray(stored.parentConfig?.routines)
       ? stored.parentConfig.routines
       : DEFAULT_ROUTINES;
 
-    const activeRoutine = routines.find((r) => isActive(r)) || null;
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const activeRoutine = globalThis.SkarmroRoutineEngine.findActive(routines, currentMinutes);
+
     const runtimeState = {
-      updatedAt:new Date().toISOString(),
+      updatedAt:now.toISOString(),
       activeRoutine,
-      overrides:{
-        forceAutoProtect:activeRoutine?.mode === "focus",
-        forceBlockShorts:activeRoutine?.mode === "focus",
-        blockYouTube:activeRoutine?.mode === "pause"
-      }
+      overrides:globalThis.SkarmroRoutineEngine.overridesFor(activeRoutine)
     };
 
     await chrome.storage.local.set({ runtimeState });
