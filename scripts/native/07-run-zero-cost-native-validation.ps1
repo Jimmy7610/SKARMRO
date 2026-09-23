@@ -72,8 +72,43 @@ $results["Launcher projection has apps"] = $launcherPolicy -and @($launcherPolic
 $aclOk = $false
 if (Test-Path $publicRoot) {
     try {
-        $aclText = (& icacls $publicRoot) -join "`n"
-        $aclOk = $aclText -match "S-1-5-32-545:\(OI\)\(CI\)\(RX\)" -or $aclText -match "BUILTIN\\Users:\(OI\)\(CI\)\(RX\)"
+        $usersSid = [Security.Principal.SecurityIdentifier]::new("S-1-5-32-545")
+        $acl = Get-Acl $publicRoot
+
+        $userRules = @($acl.Access | Where-Object {
+            try {
+                $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -eq $usersSid.Value
+            } catch {
+                $false
+            }
+        })
+
+        $hasReadExecute = $false
+        $hasWrite = $false
+
+        foreach ($rule in $userRules) {
+            if ($rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow) {
+                continue
+            }
+
+            $rights = $rule.FileSystemRights
+
+            if (($rights -band [Security.AccessControl.FileSystemRights]::ReadAndExecute) -eq
+                [Security.AccessControl.FileSystemRights]::ReadAndExecute) {
+                $hasReadExecute = $true
+            }
+
+            $writeMask =
+                [Security.AccessControl.FileSystemRights]::Write -bor
+                [Security.AccessControl.FileSystemRights]::Modify -bor
+                [Security.AccessControl.FileSystemRights]::FullControl
+
+            if (($rights -band $writeMask) -ne 0) {
+                $hasWrite = $true
+            }
+        }
+
+        $aclOk = $hasReadExecute -and -not $hasWrite
     } catch {}
 }
 $results["Launcher projection read-only for Users"] = $aclOk
