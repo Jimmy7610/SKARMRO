@@ -12,8 +12,10 @@ This checklist tracks preparation for a SignPath Foundation open-source code-sig
 - [x] Uninstallation documentation published
 - [x] Windows builds run on GitHub-hosted runners
 - [x] Automated native build validation
-- [ ] Public release exists in the same form intended for signing
-- [ ] Release artifact is uploaded by GitHub Actions before signing submission
+- [x] Public alpha release workflow on GitHub-hosted Windows runner
+- [x] SHA-256 checksum file published with release assets
+- [x] Public release exists in the same form intended for signing (`v0.1.0-alpha`)
+- [x] Release artifacts are built and uploaded by GitHub Actions before signing submission
 - [ ] SignPath Foundation application accepted
 - [ ] SignPath GitHub App installed and repository access granted
 - [ ] SignPath organization/project/policy identifiers configured
