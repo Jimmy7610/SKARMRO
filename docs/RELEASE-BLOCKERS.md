@@ -15,7 +15,7 @@ A public paid release is **NO-GO** until every critical item below is green.
 - [ ] app enforcement tested on Windows 11 Home and Pro
 - [ ] routines enforce at both browser and app layers
 - [x] temporary access auto-restores reliably
-- [ ] Parent App changes are authenticated/authorized
+- [ ] Parent App changes are authenticated/authorized (named-pipe IPC implemented; end-to-end runtime verification blocked by newest Guard executable under Smart App Control)
 - [ ] Junior Launcher tamper tests completed (build hardening done; signed runtime test pending)
 - [ ] uninstall/repair flow tested
 - [ ] no local privilege escalation introduced
@@ -74,8 +74,8 @@ Completed without disabling Smart App Control:
 Still blocked for real deployment by external prerequisites:
 
 - [ ] trusted code-signing certificate
-- [ ] signed native installer/package
-- [ ] signed newest Guard/Parent App/Junior Launcher deployment on WILMA
+- [ ] signed native installer/package (local MSIX signing/install works; public trusted distribution still unresolved)
+- [ ] signed newest Guard/Parent App/Junior Launcher deployment on WILMA (MSIX 0.1.0.2 installs, but newest Guard runtime is stopped after Windows Security blocks the executable)
 - [ ] browser-extension tamper/disable health verified by native code
 - [ ] Windows 11 Pro validation
 - [ ] multi-PC/OEM pilot
