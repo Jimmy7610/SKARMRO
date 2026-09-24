@@ -56,7 +56,7 @@
                         <TextBlock Text="SKÄRMRO · BOUNDARY, NOT SURVEILLANCE" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
                         <TextBlock x:Name="PageTitleText" Text="Översikt" FontSize="30" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
-                    <Button Grid.Column="1" x:Name="SaveNativePolicyButton" Content="Spara native-policy" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveNativePolicy_Click" ToolTip="Sparar ändrade appregler via Guard Service"/>
+                    <Button Grid.Column="1" x:Name="SaveNativePolicyButton" Style="{StaticResource DarkButtonStyle}" Content="Spara native-policy" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveNativePolicy_Click" ToolTip="Sparar ändrade appregler via Guard Service"/>
                 </Grid>
             </Border>
 
@@ -120,8 +120,8 @@
                                 <TextBlock Text="SNABBKONTROLLER" Foreground="#84A0BD" FontSize="10" FontWeight="SemiBold"/>
                                 <TextBlock Text="Nu direkt" FontSize="21" FontWeight="Bold" Margin="0,4,0,14"/>
                                 <WrapPanel>
-                                    <Button Content="Pausa YouTube 30 min" ToolTip="Tillgänglig när snabbkontroller är aktiverade"/>
-                                    <Button Content="Ge 15 min extra tid" ToolTip="Tillgänglig när snabbkontroller är aktiverade"/>
+                                    <Button Style="{StaticResource DarkButtonStyle}" IsEnabled="False" Content="Pausa YouTube 30 min" ToolTip="Tillgänglig när snabbkontroller är aktiverade"/>
+                                    <Button Style="{StaticResource DarkButtonStyle}" IsEnabled="False" Content="Ge 15 min extra tid" ToolTip="Tillgänglig när snabbkontroller är aktiverade"/>
                                 </WrapPanel>
                                 <TextBlock Text="Tillgänglig när Native Guard är aktiv." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,10,0,0"/>
                                 <TextBlock Text="Native app-kontroller kopplas till Guard Service via IPC i nästa signerade runtime." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,6,0,0"/>
