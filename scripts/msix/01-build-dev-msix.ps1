@@ -4,7 +4,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $outRoot = Join-Path $repoRoot "artifacts\msix-dev"
 $layout = Join-Path $outRoot "layout"
 $package = Join-Path $outRoot "SKARMRO-0.1.0-dev-x64.msix"
-$manifestTemplate = Join-Path $repoRoot "packaging\msix\AppxManifest.xml"
+$manifestTemplate = Join-Path $repoRoot "packaging\msix\AppxManifest.Dev.xml"
 
 Write-Host ""
 Write-Host "=== SKARMRO MSIX DEV BUILD ===" -ForegroundColor Cyan
