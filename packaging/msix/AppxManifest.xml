@@ -7,7 +7,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap desktop desktop6 rescap">
 
-  <Identity Name="SKRMRO.SKRMRO" Publisher="CN=69D0A1B8-318B-46DB-B4CB-AFC6BDB26429" Version="0.1.0.3" ProcessorArchitecture="x64" />
+  <Identity Name="SKRMRO.SKRMRO" Publisher="CN=69D0A1B8-318B-46DB-B4CB-AFC6BDB26429" Version="0.1.1.0" ProcessorArchitecture="x64" />
 
   <Properties>
     <DisplayName>SKÄRMRO</DisplayName>
