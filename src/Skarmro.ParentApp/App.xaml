@@ -59,5 +59,24 @@
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
+            <Style x:Key="DarkButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="#EAF3FF"/>
+            <Setter Property="Background" Value="#162536"/>
+            <Setter Property="BorderBrush" Value="#2A3E55"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#8FA4B8"/>
+                    <Setter Property="Background" Value="#101B27"/>
+                    <Setter Property="BorderBrush" Value="#26394C"/>
+                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Application.Resources>
 </Application>
