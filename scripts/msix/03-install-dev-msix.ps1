@@ -19,10 +19,24 @@ Write-Host ""
 Get-AppxPackage -Name "SKARMRO.Dev" | Select-Object Name, PackageFullName, Status
 Write-Host ""
 $service = Get-Service -Name "SkarmroGuardServiceMsix" -ErrorAction SilentlyContinue
-if ($service) {
-    Write-Host "Guard service registered: $($service.Status)" -ForegroundColor Green
-} else {
-    Write-Warning "MSIX installed, but SkarmroGuardServiceMsix was not found."
+if (-not $service) {
+    Write-Error "MSIX package installed, but SkarmroGuardServiceMsix was not registered."
+    throw "SKARMRO MSIX runtime validation failed: Guard service missing."
 }
+
+if ($service.Status -ne "Running") {
+    Write-Host "Guard service registered: $($service.Status)" -ForegroundColor Red
+    Write-Host ""
+    Write-Warning "The package is installed, but the Guard runtime is NOT healthy."
+    Write-Warning "On WILMA this can occur when Windows security / Smart App Control blocks the changed Guard executable."
+    Write-Host "Do not disable Smart App Control." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Diagnostic commands:" -ForegroundColor Cyan
+    Write-Host '  Get-Service SkarmroGuardServiceMsix | Select-Object Name,Status,StartType'
+    Write-Host '  Get-CimInstance Win32_Service -Filter "Name=''SkarmroGuardServiceMsix''" | Select-Object Name,State,StartMode,StartName,PathName'
+    throw "SKARMRO MSIX runtime validation failed: Guard service is $($service.Status), expected Running."
+}
+
+Write-Host "Guard service registered: Running" -ForegroundColor Green
 Write-Host ""
 Write-Host "Do not modify Smart App Control. This is a locally trusted development MSIX."
