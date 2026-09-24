@@ -172,56 +172,43 @@ public partial class MainWindow : Window
         AppsPolicyStatusText.Text = "Osparade ändringar";
     }
 
-    private async void SaveNativePolicy_Click(object sender, RoutedEventArgs e)
+    private void SaveNativePolicy_Click(object sender, RoutedEventArgs e)
     {
-        SaveNativePolicyButton.IsEnabled = false;
-
         try
         {
             _nativePolicy.Enabled = true;
-            AppsPolicyStatusText.Text = "Sparar via Guard Service...";
+            NativePolicyStore.Write(_nativePolicy);
+            LauncherProjectionStore.WriteFrom(_nativePolicy);
 
-            var response = await GuardPolicyClient.SaveAsync(_nativePolicy);
-
-            if (!response.Success)
-            {
-                AppsPolicyStatusText.Text = "Kunde inte spara policy";
-                MessageBox.Show(
-                    "Kunde inte spara appreglerna.\n\n" + response.Message,
-                    "SKÄRMRO",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-                return;
-            }
-
-            LoadNativePolicy();
             AppsPolicyStatusText.Text =
-                $"Sparad via Guard Service · {_nativePolicy.BlockedProcessNames.Length} blockerade · {_nativePolicy.AllowedProcessNames.Length} tillåtna";
+                $"Sparad · {_nativePolicy.BlockedProcessNames.Length} blockerade · {_nativePolicy.AllowedProcessNames.Length} tillåtna";
 
             RefreshNativeHealth();
 
             MessageBox.Show(
-                "Appreglerna sparades säkert via SKÄRMRO Guard Service.\n\n" +
+                "Appreglerna sparades för SkarmroChild.\n\n" +
                 "Blockerade processer börjar gälla direkt vid nästa processstart.\n" +
                 "Junior Launcher har uppdaterats med samma tillåt-lista.\n" +
-                "Parent App har inte fått direkt skrivåtkomst till den skyddade policyn.\n" +
                 "Smart App Control har inte ändrats.",
                 "SKÄRMRO",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "Appreglerna kräver administratörsbehörighet för att sparas.",
+                "SKÄRMRO",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
         catch (Exception ex)
         {
-            AppsPolicyStatusText.Text = "Kunde inte spara policy";
             MessageBox.Show(
                 "Kunde inte spara appreglerna.\n\n" + ex.Message,
                 "SKÄRMRO",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-        }
-        finally
-        {
-            SaveNativePolicyButton.IsEnabled = true;
         }
     }
 }
